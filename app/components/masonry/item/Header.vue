@@ -46,6 +46,7 @@ const totalSelectedFilters = computed(() => {
 
 const appSlogan = computed(() => (getSetting('app:slogan') as string) || '')
 const typedSlogan = ref('')
+const isTypewriterComplete = ref(true)
 const typewriterDelayMs = 75
 let typewriterTimer: ReturnType<typeof setTimeout> | undefined
 
@@ -61,6 +62,7 @@ const stopTypewriter = () => {
 const startTypewriter = (slogan: string) => {
   stopTypewriter()
   typedSlogan.value = ''
+  isTypewriterComplete.value = !slogan
 
   if (!slogan) {
     return
@@ -72,6 +74,7 @@ const startTypewriter = (slogan: string) => {
 
     if (nextIndex >= slogan.length) {
       typewriterTimer = undefined
+      isTypewriterComplete.value = true
       return
     }
 
@@ -161,6 +164,7 @@ const isAboutOpen = ref(false)
             >
               <span aria-hidden="true">{{ typedSlogan }}</span>
               <span
+                v-if="!isTypewriterComplete"
                 class="typewriter-caret ml-0.5 inline-block h-[1em] w-px bg-current"
                 aria-hidden="true"
               ></span>
