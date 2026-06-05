@@ -1,6 +1,4 @@
 <script lang="ts" setup>
-import { motion, AnimatePresence } from 'motion-v'
-
 defineProps<{
   stats?: {
     total: number
@@ -46,7 +44,7 @@ const totalSelectedFilters = computed(() => {
   )
 })
 
-const isRepoLinkHovering = ref(false)
+const isAboutOpen = ref(false)
 </script>
 
 <template>
@@ -261,37 +259,59 @@ const isRepoLinkHovering = ref(false)
         <div
           class="text-xs text-neutral-500/60 dark:text-neutral-500/80 font-medium inline-flex justify-center items-center gap-0.5"
         >
-          <a
-            ref="projectLink"
-            href="https://github.com/HoshinoSuzumi/chronoframe"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="hover:underline inline-flex items-center gap-0.5 group"
-            @mouseenter="isRepoLinkHovering = true"
-            @mouseleave="isRepoLinkHovering = false"
+          <button
+            type="button"
+            class="hover:underline inline-flex items-center gap-0.5 cursor-pointer"
+            @click="isAboutOpen = true"
           >
-            <Icon
-              name="mdi:github"
-              class="inline-block text-sm -mt-px"
-              mode="svg"
-            />
-            ChronoFrame
-            <AnimatePresence>
-              <motion.span
-                v-if="isRepoLinkHovering"
-                :initial="{ width: 0, opacity: 0 }"
-                :animate="{ width: 'auto', opacity: 1 }"
-                :exit="{ width: 0, opacity: 0 }"
-                :transition="{ duration: 0.3, ease: 'easeInOut' }"
-                style="overflow: hidden; white-space: nowrap"
-              >
-                ({{ $config.public.VERSION }})
-              </motion.span>
-            </AnimatePresence>
-          </a>
+            About
+          </button>
         </div>
       </div>
     </div>
+    <UModal
+      v-model:open="isAboutOpen"
+      portal
+      :ui="{ content: 'max-w-md' }"
+    >
+      <template #content>
+        <div class="p-5 space-y-4">
+          <div class="flex items-start justify-between gap-4">
+            <div>
+              <h2 class="text-lg font-semibold text-neutral-900 dark:text-white">
+                About
+              </h2>
+              <p class="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
+                Personal photo gallery
+              </p>
+            </div>
+            <UButton
+              icon="tabler:x"
+              color="neutral"
+              variant="ghost"
+              size="sm"
+              aria-label="Close about dialog"
+              @click="isAboutOpen = false"
+            />
+          </div>
+          <div
+            class="space-y-3 text-sm leading-6 text-neutral-600 dark:text-neutral-300"
+          >
+            <p>
+              ChronoFrame is a self-hosted personal photo gallery for browsing
+              photos with EXIF metadata and map-based location views.
+            </p>
+            <p>
+              This fork is maintained for my personal website and future
+              customization experiments.
+            </p>
+          </div>
+          <p class="text-xs text-neutral-400 dark:text-neutral-500">
+            Based on ChronoFrame v{{ $config.public.VERSION }}.
+          </p>
+        </div>
+      </template>
+    </UModal>
   </div>
 </template>
 
