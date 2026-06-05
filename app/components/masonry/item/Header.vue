@@ -141,15 +141,16 @@ const isAboutOpen = ref(false)
             class="text-neutral-600 dark:text-white/30 space-y-1 text-center"
           >
             <p
+              v-if="stats?.total && dateRangeText"
+              class="text-xs font-medium"
+            >
+              {{ dateRangeText }}
+            </p>
+            <p
               v-if="stats?.total"
               class="text-xs font-medium"
             >
-              {{
-                $t('ui.stats.totalPhotosWithRange', {
-                  range: dateRangeText,
-                  count: stats?.total,
-                })
-              }}
+              {{ $t('ui.stats.totalPhotos', { count: stats.total }) }}
             </p>
             <p
               v-else

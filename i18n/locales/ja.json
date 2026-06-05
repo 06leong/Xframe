@@ -113,6 +113,7 @@
     },
     "stats": {
       "totalPhotosWithRange": "{range}、@:plural.photo 合計",
+      "totalPhotos": "@:plural.photo 合計",
       "noPhotosTip": "まだ写真はありません。アップロードしてください！"
     },
     "livePhoto": "Live Photo",
@@ -994,6 +995,15 @@
         "label": "位置情報の言語",
         "description": "場所名を逆ジオコーディングする際の言語",
         "help": "写真の位置情報を決定する逆ジオコーディング用の言語を選択します。デフォルトは英語です。"
+      },
+      "nameLanguageMode": {
+        "label": "保存する場所名の言語",
+        "description": "国名と都市名を保存するときに使う言語を制御します",
+        "help": "現地名は撮影場所で使われる言語の地名を保存します。設定言語は上の位置情報の言語設定を使用します。",
+        "options": {
+          "native": "現地名",
+          "configured": "設定言語"
+        }
       },
       "mapbox": {
         "token": {

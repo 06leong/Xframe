@@ -117,6 +117,7 @@
     },
     "stats": {
       "totalPhotosWithRange": "{range}，共 @:plural.photo",
+      "totalPhotos": "共 @:plural.photo",
       "noPhotosTip": "還沒有照片，快去上傳一些吧！"
     },
     "album": {
@@ -994,6 +995,15 @@
         "label": "地理位置語言",
         "description": "進行逆地理編碼時所使用的語言",
         "help": "選擇解析照片拍攝地點名稱時所使用的語言。預設為英文。"
+      },
+      "nameLanguageMode": {
+        "label": "儲存地點名稱語言",
+        "description": "控制儲存國家與城市名稱時使用的語言",
+        "help": "本地原生名稱會按拍攝地點當地語言儲存地名；設定語言會使用上方的地理位置語言設定。",
+        "options": {
+          "native": "本地原生名稱",
+          "configured": "設定語言"
+        }
       },
       "mapbox": {
         "token": {

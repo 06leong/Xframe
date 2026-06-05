@@ -113,6 +113,7 @@
     },
     "stats": {
       "totalPhotosWithRange": "{range}, @:plural.photo total",
+      "totalPhotos": "@:plural.photo total",
       "noPhotosTip": "No photos yet, upload some now!"
     },
     "livePhoto": "Live Photo",
@@ -1059,6 +1060,15 @@
         "label": "Location Language",
         "description": "Language for geocoding location names",
         "help": "Choose the language for reverse geocoding photo locations. Default is English."
+      },
+      "nameLanguageMode": {
+        "label": "Stored Location Name Language",
+        "description": "Controls the language used when saving country and city names",
+        "help": "Native local names store place names in the language used at the photo location. Configured language uses the Location Language setting.",
+        "options": {
+          "native": "Native local names",
+          "configured": "Configured language"
+        }
       },
       "mapbox": {
         "token": {

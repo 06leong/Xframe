@@ -117,6 +117,7 @@
     },
     "stats": {
       "totalPhotosWithRange": "{range}, 共 @:plural.photo",
+      "totalPhotos": "共 @:plural.photo",
       "noPhotosTip": "还没有照片，快去上传一些吧！"
     },
     "indexPanelCountCity": "等 {count} 个城市",
@@ -1063,6 +1064,15 @@
         "label": "地理位置语言",
         "description": "进行逆地理编码时所使用的语言",
         "help": "选择解析照片拍摄地点名称时所使用的语言。默认为英文。"
+      },
+      "nameLanguageMode": {
+        "label": "存储地点名称语言",
+        "description": "控制保存国家和城市名称时使用的语言",
+        "help": "本地原生名称会按拍摄地点当地语言保存地名；配置语言会使用上方的地理位置语言设置。",
+        "options": {
+          "native": "本地原生名称",
+          "configured": "配置语言"
+        }
       },
       "mapbox": {
         "token": {

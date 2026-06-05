@@ -97,6 +97,22 @@ export const LOCATION_SETTINGS_UI: Record<string, FieldUIConfig> = {
     ],
     help: 'settings.location.language.help',
   },
+  nameLanguageMode: {
+    type: 'tabs',
+    options: [
+      {
+        label: 'settings.location.nameLanguageMode.options.native',
+        value: 'native',
+        icon: 'tabler:map-pin',
+      },
+      {
+        label: 'settings.location.nameLanguageMode.options.configured',
+        value: 'configured',
+        icon: 'tabler:language',
+      },
+    ],
+    help: 'settings.location.nameLanguageMode.help',
+  },
   'mapbox.token': {
     type: 'password',
     placeholder: 'pk.xxxxxx',

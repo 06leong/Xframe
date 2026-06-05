@@ -153,14 +153,15 @@ const photoStats = computed(() => {
   const allDates = displayPhotos.value
     ?.map((p) => p?.dateTaken)
     .filter((date): date is string => Boolean(date))
-    .map((date) => dayjs(date).format('ll'))
-    .sort((a, b) => (dayjs(a).isBefore(dayjs(b)) ? 1 : -1))
+    .map((date) => dayjs(date))
+    .filter((date) => date.isValid())
+    .sort((a, b) => (a.isBefore(b) ? -1 : 1))
 
   const dateRange =
     allDates.length > 0
       ? {
-          start: allDates[0],
-          end: allDates[allDates.length - 1],
+          start: allDates[0]?.format('ll'),
+          end: allDates[allDates.length - 1]?.format('ll'),
         }
       : null
 

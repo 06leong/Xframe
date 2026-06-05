@@ -196,6 +196,16 @@ export const DEFAULT_SETTINGS = [
   },
   {
     namespace: 'location',
+    key: 'nameLanguageMode',
+    type: 'string',
+    defaultValue: 'native',
+    enum: ['native', 'configured'] as const,
+    label: 'settings.location.nameLanguageMode.label',
+    description: 'settings.location.nameLanguageMode.description',
+    isPublic: true,
+  },
+  {
+    namespace: 'location',
     key: 'mapbox.token',
     type: 'string',
     defaultValue: '',
