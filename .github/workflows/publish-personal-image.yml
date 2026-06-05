@@ -33,8 +33,16 @@ jobs:
         run: |
           image="ghcr.io/${GITHUB_REPOSITORY,,}"
           short_sha="${GITHUB_SHA::7}"
+          version="$(tr -d '[:space:]' < personal-image-version.txt)"
+
+          if [[ ! "$version" =~ ^v[0-9]+(\.[0-9]+){1,2}$ ]]; then
+            echo "Invalid personal image version: $version" >&2
+            exit 1
+          fi
+
           echo "image=$image" >> "$GITHUB_OUTPUT"
           echo "short_sha=$short_sha" >> "$GITHUB_OUTPUT"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
 
       - name: Build and push image
         uses: docker/build-push-action@v6
@@ -43,6 +51,7 @@ jobs:
           push: true
           tags: |
             ${{ steps.image.outputs.image }}:personal
+            ${{ steps.image.outputs.image }}:${{ steps.image.outputs.version }}
             ${{ steps.image.outputs.image }}:personal-${{ steps.image.outputs.short_sha }}
           labels: |
             org.opencontainers.image.source=https://github.com/${{ github.repository }}

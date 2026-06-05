@@ -44,6 +44,54 @@ const totalSelectedFilters = computed(() => {
   )
 })
 
+const appSlogan = computed(() => (getSetting('app:slogan') as string) || '')
+const typedSlogan = ref('')
+const typewriterDelayMs = 75
+let typewriterTimer: ReturnType<typeof setTimeout> | undefined
+
+const stopTypewriter = () => {
+  if (!typewriterTimer) {
+    return
+  }
+
+  clearTimeout(typewriterTimer)
+  typewriterTimer = undefined
+}
+
+const startTypewriter = (slogan: string) => {
+  stopTypewriter()
+  typedSlogan.value = ''
+
+  if (!slogan) {
+    return
+  }
+
+  let nextIndex = 1
+  const typeNextCharacter = () => {
+    typedSlogan.value = slogan.slice(0, nextIndex)
+
+    if (nextIndex >= slogan.length) {
+      typewriterTimer = undefined
+      return
+    }
+
+    nextIndex += 1
+    typewriterTimer = setTimeout(typeNextCharacter, typewriterDelayMs)
+  }
+
+  typewriterTimer = setTimeout(typeNextCharacter, typewriterDelayMs)
+}
+
+onMounted(() => {
+  startTypewriter(appSlogan.value)
+})
+
+watch(appSlogan, (slogan) => {
+  startTypewriter(slogan)
+})
+
+onBeforeUnmount(stopTypewriter)
+
 const isAboutOpen = ref(false)
 </script>
 
@@ -107,10 +155,15 @@ const isAboutOpen = ref(false)
               {{ $t('ui.stats.noPhotosTip') }}
             </p>
             <p
-              v-if="getSetting('app:slogan')"
-              class="font-[Pacifico]"
+              v-if="appSlogan"
+              class="font-[Pacifico] inline-flex min-h-[1.5em] items-center justify-center"
+              :aria-label="appSlogan"
             >
-              {{ getSetting('app:slogan') }}
+              <span aria-hidden="true">{{ typedSlogan }}</span>
+              <span
+                class="typewriter-caret ml-0.5 inline-block h-[1em] w-px bg-current"
+                aria-hidden="true"
+              ></span>
             </p>
           </div>
           <div
@@ -315,4 +368,20 @@ const isAboutOpen = ref(false)
   </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+.typewriter-caret {
+  animation: typewriter-caret-blink 1s steps(1, end) infinite;
+}
+
+@keyframes typewriter-caret-blink {
+  0%,
+  45% {
+    opacity: 1;
+  }
+
+  46%,
+  100% {
+    opacity: 0;
+  }
+}
+</style>
