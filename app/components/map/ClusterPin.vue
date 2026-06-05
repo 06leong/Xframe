@@ -2,7 +2,7 @@
 import { motion } from 'motion-v'
 import ThumbImage from '../ui/ThumbImage.vue'
 import { twMerge } from 'tailwind-merge'
-import type { ClusterPoint } from '~~/shared/types/map'
+import type { ClusterPoint, PhotoMarker } from '~~/shared/types/map'
 
 const props = withDefaults(
   defineProps<{
@@ -21,7 +21,7 @@ const emit = defineEmits<{
   close: []
 }>()
 
-const dayjs = useDayjs()
+const { formatExifDateTime } = useExifDateTime()
 
 const onClick = () => {
   emit('click', props.clusterPoint)
@@ -38,6 +38,37 @@ const pointCount = computed(
 const representativePhoto = computed(
   () => props.clusterPoint.properties.marker!,
 )
+
+const formatClusterDate = (photo: PhotoMarker) =>
+  formatExifDateTime(
+    photo.exif?.DateTimeOriginal || photo.dateTaken,
+    photo.exif,
+    'l',
+  )
+
+const clusterDateRange = computed(() => {
+  const photos = [...clusteredPhotos.value]
+    .filter((photo) => photo.dateTaken)
+    .sort((a, b) => (a.dateTaken || '').localeCompare(b.dateTaken || ''))
+
+  if (photos.length === 0) {
+    return ''
+  }
+
+  const firstPhoto = photos[0]
+  if (!firstPhoto) {
+    return ''
+  }
+
+  if (photos.length === 1) {
+    return formatClusterDate(firstPhoto)
+  }
+
+  const lastPhoto = photos[photos.length - 1]
+  return lastPhoto
+    ? `${formatClusterDate(firstPhoto)} - ${formatClusterDate(lastPhoto)}`
+    : formatClusterDate(firstPhoto)
+})
 
 const sizeDelta = computed(() => {
   const count = pointCount.value
@@ -246,20 +277,7 @@ const sizeDelta = computed(() => {
                         name="tabler:calendar-week"
                         class="size-4"
                       />
-                      <span class="truncate">
-                        {{
-                          (() => {
-                            const dates = clusteredPhotos
-                              .map((p) => p.dateTaken)
-                              .filter(Boolean)
-                              .sort()
-                            if (dates.length === 0) return ''
-                            if (dates.length === 1)
-                              return dayjs(dates[0]).format('l')
-                            return `${dayjs(dates[0]).format('l')} - ${dayjs(dates[dates.length - 1]).format('l')}`
-                          })()
-                        }}
-                      </span>
+                      <span class="truncate">{{ clusterDateRange }}</span>
                     </div>
                   </div>
                 </div>

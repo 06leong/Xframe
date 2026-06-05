@@ -20,9 +20,9 @@ interface Album {
   updatedAt: Date
 }
 
-const dayjs = useDayjs()
 const router = useRouter()
 const { localizeExif } = useExifLocalization()
+const { formatExifDateTime } = useExifDateTime()
 
 const props = defineProps<Props>()
 
@@ -160,7 +160,10 @@ const formatedExifData = computed<Record<string, KVData[]>>(() => {
         props.exifData?.DateTimeOriginal
           ? {
               label: $t('exif.dateTaken.title'),
-              value: dayjs(props.exifData.DateTimeOriginal).format('L LT'),
+              value: formatExifDateTime(
+                props.exifData.DateTimeOriginal,
+                props.exifData,
+              ),
               icon: 'tabler:calendar',
             }
           : null,

@@ -16,6 +16,7 @@ const emit = defineEmits<{
 }>()
 
 const { gtag } = useGtag()
+const { formatExifDateTime } = useExifDateTime()
 
 const isLoading = ref(true)
 const photoRef = ref<HTMLElement>()
@@ -593,7 +594,13 @@ onUnmounted(() => {
               class="text-xs font-medium opacity-80"
             >
               <span v-if="photo.dateTaken">
-                {{ $dayjs(photo.dateTaken).format('YYYY-MM-DD') }}
+                {{
+                  formatExifDateTime(
+                    photo.exif?.DateTimeOriginal || photo.dateTaken,
+                    photo.exif,
+                    'YYYY-MM-DD',
+                  )
+                }}
               </span>
               <span v-if="photo.city">
                 <span v-if="photo.dateTaken"> · </span>{{ photo.city }}

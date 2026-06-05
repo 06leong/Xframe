@@ -23,7 +23,7 @@ const emit = defineEmits<{
   close: []
 }>()
 
-const dayjs = useDayjs()
+const { formatExifDateTime } = useExifDateTime()
 const marker = computed(() => props.clusterPoint.properties.marker!)
 const hoverOpen = ref(false)
 
@@ -425,7 +425,13 @@ const onClick = () => {
                       <span v-if="marker.city">·</span>
                       <div v-if="marker.exif?.DateTimeOriginal">
                         <span class="truncate">
-                          {{ dayjs(marker.exif.DateTimeOriginal).format('ll') }}
+                          {{
+                            formatExifDateTime(
+                              marker.exif.DateTimeOriginal,
+                              marker.exif,
+                              'll',
+                            )
+                          }}
                         </span>
                       </div>
                     </div>

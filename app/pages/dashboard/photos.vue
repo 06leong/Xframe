@@ -44,6 +44,7 @@ const systemUploadEraseLocationDefault = computed(() => {
 })
 
 const dayjs = useDayjs()
+const { formatExifDateTime } = useExifDateTime()
 
 const { status, refresh } = usePhotos()
 const { filteredPhotos, selectedCounts, hasActiveFilters } = usePhotoFilters()
@@ -948,13 +949,17 @@ const columns: TableColumn<Photo>[] = [
   {
     accessorKey: 'dateTaken',
     header: $t('dashboard.photos.table.columns.dateTaken'),
-    cell: (info) => {
-      const date = info.getValue() as string
+    cell: ({ row }) => {
+      const date = row.original.dateTaken
       return h(
         'span',
         { class: 'font-mono text-xs' },
         date
-          ? dayjs(date).format('YYYY-MM-DD HH:mm:ss')
+          ? formatExifDateTime(
+              row.original.exif?.DateTimeOriginal || date,
+              row.original.exif,
+              'YYYY-MM-DD HH:mm:ss',
+            )
           : $t('dashboard.photos.table.cells.unknown'),
       )
     },
