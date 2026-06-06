@@ -327,7 +327,7 @@ onUnmounted(() => {
 })
 
 const handleOpenViewer = (index: number) => {
-  router.push(`/${displayPhotos.value[index]?.id}`)
+  router.push(getPhotoPublicPath(displayPhotos.value[index]))
 }
 
 const scrollToPhoto = (photoIndex: number) => {

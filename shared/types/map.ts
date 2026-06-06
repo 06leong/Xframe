@@ -22,6 +22,7 @@ export const isMapboxMap = (
 
 export interface PhotoMarker {
   id: string
+  publicSlug?: string | null
   latitude: number
   longitude: number
   title?: string

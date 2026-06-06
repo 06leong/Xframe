@@ -365,7 +365,8 @@
     "appearanceSettings": "外観設定",
     "privacySettings": "プライバシー設定",
     "mapAndLocation": "地図と場所",
-    "location": "位置情報サービス"
+    "location": "位置情報サービス",
+    "photoInfoSettings": "Photo Info Display"
   },
   "auth": {
     "form": {
@@ -1144,6 +1145,197 @@
         "cdnUrl": {
           "label": "CDN URL",
           "description": "画像にアクセスするためのカスタム CDN URL"
+        }
+      }
+    },
+    "common": {
+      "reset": "Reset",
+      "save": "Save changes"
+    },
+    "photoInfo": {
+      "item": {
+        "description": "Controls whether this metadata item is visible in the public photo information panel.",
+        "help": "Disable this to hide the item from public photo details without changing stored photo data."
+      },
+      "page": {
+        "description": "Choose which metadata sections and fields are visible in the public photo viewer, and control how shooting time is formatted."
+      },
+      "groups": {
+        "sections": "Sections",
+        "basic": "Basic information",
+        "shooting": "Shooting parameters",
+        "equipment": "Equipment information",
+        "mode": "Shooting mode",
+        "technical": "Technical parameters"
+      },
+      "sections": {
+        "basicInfo": {
+          "label": "Basic information section"
+        },
+        "rating": {
+          "label": "Rating section"
+        },
+        "albums": {
+          "label": "Albums section"
+        },
+        "tags": {
+          "label": "Tags section"
+        },
+        "shootingParameters": {
+          "label": "Shooting parameters section"
+        },
+        "histogram": {
+          "label": "Histogram section"
+        },
+        "equipmentInformation": {
+          "label": "Equipment information section"
+        },
+        "shootingMode": {
+          "label": "Shooting mode section"
+        },
+        "technicalParameters": {
+          "label": "Technical parameters section"
+        }
+      },
+      "basic": {
+        "filename": {
+          "label": "Filename"
+        },
+        "fileSize": {
+          "label": "File size"
+        },
+        "resolution": {
+          "label": "Resolution"
+        },
+        "pixels": {
+          "label": "Pixels"
+        },
+        "shootingTime": {
+          "label": "Shooting time"
+        },
+        "colorSpace": {
+          "label": "Color space"
+        },
+        "artist": {
+          "label": "Artist"
+        },
+        "software": {
+          "label": "Software"
+        },
+        "timeZone": {
+          "label": "Time zone"
+        },
+        "country": {
+          "label": "Country"
+        },
+        "city": {
+          "label": "City"
+        },
+        "coordinate": {
+          "label": "Coordinate"
+        },
+        "miniMap": {
+          "label": "Mini map"
+        }
+      },
+      "shooting": {
+        "focalLength": {
+          "label": "Focal length"
+        },
+        "aperture": {
+          "label": "Aperture"
+        },
+        "exposureTime": {
+          "label": "Exposure time"
+        },
+        "iso": {
+          "label": "ISO"
+        }
+      },
+      "equipment": {
+        "camera": {
+          "label": "Camera"
+        },
+        "lens": {
+          "label": "Lens"
+        },
+        "maxAperture": {
+          "label": "Maximum aperture"
+        },
+        "focalLength": {
+          "label": "Focal length"
+        },
+        "equivalentFocalLength": {
+          "label": "35mm equivalent focal length"
+        }
+      },
+      "mode": {
+        "whiteBalance": {
+          "label": "White balance"
+        },
+        "wbShiftAB": {
+          "label": "WB shift A-B"
+        },
+        "wbShiftGM": {
+          "label": "WB shift G-M"
+        },
+        "whiteBalanceBias": {
+          "label": "White balance bias"
+        },
+        "whiteBalanceFineTune": {
+          "label": "White balance fine tune"
+        },
+        "exposureProgram": {
+          "label": "Exposure program"
+        },
+        "exposureMode": {
+          "label": "Exposure mode"
+        },
+        "meteringMode": {
+          "label": "Metering mode"
+        },
+        "flash": {
+          "label": "Flash"
+        },
+        "flashMeteringMode": {
+          "label": "Flash metering mode"
+        },
+        "sceneCaptureType": {
+          "label": "Scene capture type"
+        }
+      },
+      "technical": {
+        "brightnessValue": {
+          "label": "Brightness value"
+        },
+        "sensingMethod": {
+          "label": "Sensing method"
+        },
+        "focalPlaneResolution": {
+          "label": "Focal plane resolution"
+        }
+      },
+      "time": {
+        "dateFormat": {
+          "label": "Date format",
+          "description": "Controls the date style used for shooting time in the photo information panel.",
+          "help": "Auto uses the current interface locale. The other choices force a fixed regional date order.",
+          "options": {
+            "auto": "Auto",
+            "us": "US: month/day/year",
+            "eu": "Europe: day/month/year",
+            "cn": "China: year/month/day",
+            "iso": "ISO: year-month-day"
+          }
+        },
+        "timeFormat": {
+          "label": "Time format",
+          "description": "Controls whether shooting time uses a 12-hour or 24-hour clock.",
+          "help": "This only changes presentation. EXIF time zone handling still uses the photo capture offset.",
+          "options": {
+            "12h": "12-hour",
+            "24h": "24-hour"
+          }
         }
       }
     }

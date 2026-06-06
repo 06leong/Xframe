@@ -97,7 +97,7 @@ const handleOpenViewer = (index: number) => {
     const { openViewer } = useViewerState()
     const albumRoute = `/albums/${albumId.value}`
     openViewer(0, albumRoute)
-    router.push(`/${photos[index].id}`)
+    router.push(getPhotoPublicPath(photos[index]))
   }
 }
 

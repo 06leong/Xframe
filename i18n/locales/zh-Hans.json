@@ -368,7 +368,8 @@
     "privacySettings": "隐私设置",
     "systemSettings": "系统设置",
     "mapAndLocation": "地图和位置",
-    "location": "位置服务"
+    "location": "位置服务",
+    "photoInfoSettings": "照片信息显示"
   },
   "auth": {
     "form": {
@@ -1213,6 +1214,197 @@
         "cdnUrl": {
           "label": "CDN URL",
           "description": "用于访问图像的自定义 CDN URL"
+        }
+      }
+    },
+    "common": {
+      "reset": "重置",
+      "save": "保存更改"
+    },
+    "photoInfo": {
+      "item": {
+        "description": "控制此元数据项目是否显示在公开照片信息面板中。",
+        "help": "关闭后只隐藏公开显示，不会修改已保存的照片数据。"
+      },
+      "page": {
+        "description": "选择公开照片查看器中显示哪些元数据分组和字段，并控制拍摄时间的显示格式。"
+      },
+      "groups": {
+        "sections": "分组显示",
+        "basic": "基础信息",
+        "shooting": "拍摄参数",
+        "equipment": "设备信息",
+        "mode": "拍摄模式",
+        "technical": "技术参数"
+      },
+      "sections": {
+        "basicInfo": {
+          "label": "基础信息分组"
+        },
+        "rating": {
+          "label": "评分分组"
+        },
+        "albums": {
+          "label": "相簿分组"
+        },
+        "tags": {
+          "label": "标签分组"
+        },
+        "shootingParameters": {
+          "label": "拍摄参数分组"
+        },
+        "histogram": {
+          "label": "直方图分组"
+        },
+        "equipmentInformation": {
+          "label": "设备信息分组"
+        },
+        "shootingMode": {
+          "label": "拍摄模式分组"
+        },
+        "technicalParameters": {
+          "label": "技术参数分组"
+        }
+      },
+      "basic": {
+        "filename": {
+          "label": "文件名"
+        },
+        "fileSize": {
+          "label": "文件大小"
+        },
+        "resolution": {
+          "label": "分辨率"
+        },
+        "pixels": {
+          "label": "像素"
+        },
+        "shootingTime": {
+          "label": "拍摄时间"
+        },
+        "colorSpace": {
+          "label": "色彩空间"
+        },
+        "artist": {
+          "label": "作者"
+        },
+        "software": {
+          "label": "软件"
+        },
+        "timeZone": {
+          "label": "时区"
+        },
+        "country": {
+          "label": "国家或地区"
+        },
+        "city": {
+          "label": "城市"
+        },
+        "coordinate": {
+          "label": "坐标"
+        },
+        "miniMap": {
+          "label": "迷你地图"
+        }
+      },
+      "shooting": {
+        "focalLength": {
+          "label": "焦距"
+        },
+        "aperture": {
+          "label": "光圈"
+        },
+        "exposureTime": {
+          "label": "曝光时间"
+        },
+        "iso": {
+          "label": "ISO"
+        }
+      },
+      "equipment": {
+        "camera": {
+          "label": "相机"
+        },
+        "lens": {
+          "label": "镜头"
+        },
+        "maxAperture": {
+          "label": "最大光圈"
+        },
+        "focalLength": {
+          "label": "焦距"
+        },
+        "equivalentFocalLength": {
+          "label": "35mm 等效焦距"
+        }
+      },
+      "mode": {
+        "whiteBalance": {
+          "label": "白平衡"
+        },
+        "wbShiftAB": {
+          "label": "白平衡 A-B 偏移"
+        },
+        "wbShiftGM": {
+          "label": "白平衡 G-M 偏移"
+        },
+        "whiteBalanceBias": {
+          "label": "白平衡偏差"
+        },
+        "whiteBalanceFineTune": {
+          "label": "白平衡微调"
+        },
+        "exposureProgram": {
+          "label": "曝光程序"
+        },
+        "exposureMode": {
+          "label": "曝光模式"
+        },
+        "meteringMode": {
+          "label": "测光模式"
+        },
+        "flash": {
+          "label": "闪光灯"
+        },
+        "flashMeteringMode": {
+          "label": "闪光灯测光模式"
+        },
+        "sceneCaptureType": {
+          "label": "场景拍摄类型"
+        }
+      },
+      "technical": {
+        "brightnessValue": {
+          "label": "亮度值"
+        },
+        "sensingMethod": {
+          "label": "感光方式"
+        },
+        "focalPlaneResolution": {
+          "label": "焦平面分辨率"
+        }
+      },
+      "time": {
+        "dateFormat": {
+          "label": "日期格式",
+          "description": "控制照片信息面板中拍摄时间的日期样式。",
+          "help": "自动会跟随当前界面语言；其他选项会固定使用指定地区的日期顺序。",
+          "options": {
+            "auto": "自动",
+            "us": "美国：月/日/年",
+            "eu": "欧洲：日/月/年",
+            "cn": "中国：年/月/日",
+            "iso": "ISO：年-月-日"
+          }
+        },
+        "timeFormat": {
+          "label": "时间格式",
+          "description": "控制拍摄时间使用 12 小时制还是 24 小时制。",
+          "help": "这只影响显示方式；EXIF 时区仍然使用照片拍摄时的时区偏移。",
+          "options": {
+            "12h": "12 小时制",
+            "24h": "24 小时制"
+          }
         }
       }
     }

@@ -75,6 +75,7 @@ export default eventHandler(async (event) => {
       existingPhoto = await db
         .select({
           id: tables.photos.id,
+          publicSlug: tables.photos.publicSlug,
           title: tables.photos.title,
           storageKey: tables.photos.storageKey,
           originalUrl: tables.photos.originalUrl,

@@ -200,7 +200,7 @@ const sizeDelta = computed(() => {
                     >
                       <NuxtLink
                         class="block w-full h-full"
-                        :to="`/${photo.id}`"
+                        :to="getPhotoPublicPath(photo)"
                         target="_blank"
                         rel="noopener"
                       >

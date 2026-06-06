@@ -397,7 +397,7 @@ const onClick = () => {
                 <div class="relative px-3 py-2 space-y-1">
                   <!-- Header -->
                   <NuxtLink
-                    :to="`/${marker.id}`"
+                    :to="getPhotoPublicPath(marker)"
                     target="_blank"
                     rel="noopener"
                     class="flex items-center gap-2 text-neutral-900 dark:text-white group/link"

@@ -358,9 +358,16 @@ const singleMarkers = computed(() => {
 
 watch(currentClusterPointId, (newId) => {
   if (newId) {
-    router.replace({ query: { ...route.query, photoId: newId } })
-  } else {
+    const photo = photosWithLocation.value.find((photo) => photo.id === newId)
     const { photoId, ...rest } = route.query
+    router.replace({
+      query: {
+        ...rest,
+        photo: photo ? getPhotoPublicSlug(photo) : newId,
+      },
+    })
+  } else {
+    const { photoId, photo, ...rest } = route.query
     router.replace({ query: { ...rest } })
   }
 })
@@ -464,9 +471,12 @@ const onMarkerPinClose = () => {
 const onMapLoaded = (map: any) => {
   mapInstance.value = map
 
-  const { photoId } = route.query
-  if (photoId && typeof photoId === 'string') {
-    const photo = photosWithLocation.value.find((photo) => photo.id === photoId)
+  const photoQuery = route.query.photo || route.query.photoId
+  if (photoQuery && typeof photoQuery === 'string') {
+    const photo = photosWithLocation.value.find(
+      (photo) =>
+        getPhotoPublicSlug(photo) === photoQuery || photo.id === photoQuery,
+    )
     if (photo && photo.latitude && photo.longitude) {
       setTimeout(() => {
         map.flyTo({
@@ -477,7 +487,7 @@ const onMapLoaded = (map: any) => {
         })
         setTimeout(() => {
           nextTick(() => {
-            currentClusterPointId.value = photoId
+            currentClusterPointId.value = photo.id
           })
         }, 2000)
       }, 600)

@@ -4,6 +4,64 @@ import type { SettingConfig } from '~~/shared/types/settings'
 export const STORAGE_PROVIDERS = ['local', 's3', 'openlist'] as const
 export type StorageProvider = (typeof STORAGE_PROVIDERS)[number]
 
+const PHOTO_INFO_TOGGLE_KEYS = [
+  'sections.basicInfo',
+  'sections.rating',
+  'sections.albums',
+  'sections.tags',
+  'sections.shootingParameters',
+  'sections.histogram',
+  'sections.equipmentInformation',
+  'sections.shootingMode',
+  'sections.technicalParameters',
+  'basic.filename',
+  'basic.fileSize',
+  'basic.resolution',
+  'basic.pixels',
+  'basic.shootingTime',
+  'basic.colorSpace',
+  'basic.artist',
+  'basic.software',
+  'basic.timeZone',
+  'basic.country',
+  'basic.city',
+  'basic.coordinate',
+  'basic.miniMap',
+  'shooting.focalLength',
+  'shooting.aperture',
+  'shooting.exposureTime',
+  'shooting.iso',
+  'equipment.camera',
+  'equipment.lens',
+  'equipment.maxAperture',
+  'equipment.focalLength',
+  'equipment.equivalentFocalLength',
+  'mode.whiteBalance',
+  'mode.wbShiftAB',
+  'mode.wbShiftGM',
+  'mode.whiteBalanceBias',
+  'mode.whiteBalanceFineTune',
+  'mode.exposureProgram',
+  'mode.exposureMode',
+  'mode.meteringMode',
+  'mode.flash',
+  'mode.flashMeteringMode',
+  'mode.sceneCaptureType',
+  'technical.brightnessValue',
+  'technical.sensingMethod',
+  'technical.focalPlaneResolution',
+] as const
+
+const PHOTO_INFO_TOGGLE_SETTINGS = PHOTO_INFO_TOGGLE_KEYS.map((key) => ({
+  namespace: 'photoInfo' as const,
+  key,
+  type: 'boolean' as const,
+  defaultValue: true,
+  label: `settings.photoInfo.${key}.label`,
+  description: 'settings.photoInfo.item.description',
+  isPublic: true,
+})) satisfies SettingConfig[]
+
 export const DEFAULT_SETTINGS = [
   // NAMESPACE: system
   {
@@ -220,6 +278,28 @@ export const DEFAULT_SETTINGS = [
     defaultValue: '',
     label: 'settings.location.nominatim.baseUrl.label',
     description: 'settings.location.nominatim.baseUrl.description',
+    isPublic: true,
+  },
+  // NAMESPACE: photoInfo
+  ...PHOTO_INFO_TOGGLE_SETTINGS,
+  {
+    namespace: 'photoInfo',
+    key: 'time.dateFormat',
+    type: 'string',
+    defaultValue: 'auto',
+    enum: ['auto', 'us', 'eu', 'cn', 'iso'] as const,
+    label: 'settings.photoInfo.time.dateFormat.label',
+    description: 'settings.photoInfo.time.dateFormat.description',
+    isPublic: true,
+  },
+  {
+    namespace: 'photoInfo',
+    key: 'time.timeFormat',
+    type: 'string',
+    defaultValue: '12h',
+    enum: ['12h', '24h'] as const,
+    label: 'settings.photoInfo.time.timeFormat.label',
+    description: 'settings.photoInfo.time.timeFormat.description',
     isPublic: true,
   },
   // NAMESPACE: storage

@@ -98,6 +98,7 @@ export function photosToMarkers(photos: Photo[]): PhotoMarker[] {
     )
     .map((photo) => ({
       id: photo.id,
+      publicSlug: photo.publicSlug,
       latitude: photo.latitude!,
       longitude: photo.longitude!,
       title: photo.title || undefined,

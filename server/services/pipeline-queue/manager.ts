@@ -24,6 +24,7 @@ import { settingsManager } from '../settings/settingsManager'
 import { findLivePhotoVideoForImage } from '../video/livephoto'
 import { processMotionPhotoFromXmp } from '../video/motion-photo'
 import { getStorageManager } from '~~/server/plugins/3.storage'
+import { generateUniquePublicPhotoSlug } from '~~/server/utils/photo-public-slug'
 
 const EXIF_LOCATION_KEYS = [
   'GPSAltitude',
@@ -275,6 +276,14 @@ export class QueueManager {
         const { storageKey } = payload
         const storageProvider = getStorageManager().getProvider()
         const photoId = generateSafePhotoId(storageKey)
+        const existingPhotoForSlug = useDB()
+          .select({ publicSlug: tables.photos.publicSlug })
+          .from(tables.photos)
+          .where(eq(tables.photos.id, photoId))
+          .get()
+        const publicSlug =
+          existingPhotoForSlug?.publicSlug ||
+          (await generateUniquePublicPhotoSlug())
 
         try {
           this.logger.info(`Start processing task ${taskId}: ${storageKey}`)
@@ -427,6 +436,7 @@ export class QueueManager {
           // 构建最终的 Photo 对象
           const result: Photo = {
             id: photoId,
+            publicSlug,
             title: photoInfo.title,
             description: photoInfo.description,
             dateTaken: photoInfo.dateTaken,

@@ -42,6 +42,7 @@ export const users = sqliteTable('users', {
 
 export const photos = sqliteTable('photos', {
   id: text('id').primaryKey().unique(),
+  publicSlug: text('public_slug').unique(),
   title: text('title'),
   description: text('description'),
   width: integer('width'),

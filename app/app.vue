@@ -57,7 +57,7 @@ const { currentPhotoIndex, isViewerOpen, returnRoute, isDirectAccess } =
 
 const handleIndexChange = (newIndex: number) => {
   switchToIndex(newIndex)
-  router.replace(`/${photos.value[newIndex]?.id}`)
+  router.replace(getPhotoPublicPath(photos.value[newIndex]))
 }
 
 const handleClose = () => {

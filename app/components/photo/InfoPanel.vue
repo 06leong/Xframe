@@ -25,6 +25,52 @@ const { localizeExif } = useExifLocalization()
 const { formatExifDateTime } = useExifDateTime()
 
 const props = defineProps<Props>()
+const photoInfoSettings = computed(
+  () => (getSetting('photoInfo') || {}) as Record<string, any>,
+)
+
+const isPhotoInfoEnabled = (key: string) =>
+  photoInfoSettings.value[key] !== false
+
+const shootingTimeFormat = computed(() => {
+  const dateFormat = String(
+    photoInfoSettings.value['time.dateFormat'] || 'auto',
+  )
+  const timeFormat = String(
+    photoInfoSettings.value['time.timeFormat'] || '12h',
+  )
+  const timePattern = timeFormat === '24h' ? 'HH:mm' : 'h:mm A'
+
+  switch (dateFormat) {
+    case 'us':
+      return `MM/DD/YYYY ${timePattern}`
+    case 'eu':
+      return `DD/MM/YYYY ${timePattern}`
+    case 'cn':
+      return `YYYY/MM/DD ${timePattern}`
+    case 'iso':
+      return `YYYY-MM-DD ${timePattern}`
+    default:
+      return `L ${timePattern}`
+  }
+})
+
+const filterSection = (
+  sectionKey: string,
+  section: KVData[],
+  itemKeys: string[],
+): KVData[] => {
+  if (!isPhotoInfoEnabled(sectionKey)) {
+    return []
+  }
+
+  return section.map((group) => ({
+    ...group,
+    items: group.items.map((item, index) =>
+      item && isPhotoInfoEnabled(itemKeys[index] || '') ? item : null,
+    ),
+  }))
+}
 
 // 获取照片所属的相册
 const { data: _albums } = useFetch<Album[]>(
@@ -163,6 +209,7 @@ const formatedExifData = computed<Record<string, KVData[]>>(() => {
               value: formatExifDateTime(
                 props.exifData.DateTimeOriginal,
                 props.exifData,
+                shootingTimeFormat.value,
               ),
               icon: 'tabler:calendar',
             }
@@ -439,13 +486,75 @@ const formatedExifData = computed<Record<string, KVData[]>>(() => {
     },
   ]
 
+  sections.basicInfo = filterSection('sections.basicInfo', sections.basicInfo, [
+    'basic.filename',
+    'basic.fileSize',
+    'basic.resolution',
+    'basic.pixels',
+    'basic.shootingTime',
+    'basic.colorSpace',
+    'basic.artist',
+    'basic.software',
+    'basic.timeZone',
+    'basic.country',
+    'basic.city',
+    'basic.coordinate',
+  ])
+  sections.captureParams = filterSection(
+    'sections.shootingParameters',
+    sections.captureParams,
+    [
+      'shooting.focalLength',
+      'shooting.aperture',
+      'shooting.exposureTime',
+      'shooting.iso',
+    ],
+  )
+  sections.deviceInfo = filterSection(
+    'sections.equipmentInformation',
+    sections.deviceInfo,
+    [
+      'equipment.camera',
+      'equipment.lens',
+      'equipment.maxAperture',
+      'equipment.focalLength',
+      'equipment.equivalentFocalLength',
+    ],
+  )
+  sections.captureMode = filterSection(
+    'sections.shootingMode',
+    sections.captureMode,
+    [
+      'mode.whiteBalance',
+      'mode.wbShiftAB',
+      'mode.wbShiftGM',
+      'mode.whiteBalanceBias',
+      'mode.whiteBalanceFineTune',
+      'mode.exposureProgram',
+      'mode.exposureMode',
+      'mode.meteringMode',
+      'mode.flash',
+      'mode.flashMeteringMode',
+      'mode.sceneCaptureType',
+    ],
+  )
+  sections.technicalParams = filterSection(
+    'sections.technicalParameters',
+    sections.technicalParams,
+    [
+      'technical.brightnessValue',
+      'technical.sensingMethod',
+      'technical.focalPlaneResolution',
+    ],
+  )
+
   return sections
 })
 
 const isMobile = useMediaQuery('(max-width: 768px)')
 
-const onMinimapClick = (photoId: string) => {
-  window.open(`/globe?photoId=${photoId}`)
+const onMinimapClick = (photo: Photo) => {
+  window.open(`/globe?photo=${getPhotoPublicSlug(photo)}`)
 }
 
 const onTagClick = (tag: string) => {
@@ -519,21 +628,27 @@ const onAlbumClick = (albumId: number) => {
       </div>
 
       <PhotoMiniMap
-        v-if="gpsCoordinates"
+        v-if="
+          gpsCoordinates &&
+          isPhotoInfoEnabled('sections.basicInfo') &&
+          isPhotoInfoEnabled('basic.miniMap')
+        "
         :photo="currentPhoto"
         :latitude="gpsCoordinates?.latitude"
         :longitude="gpsCoordinates?.longitude"
         class="cursor-pointer"
-        @click="onMinimapClick(currentPhoto.id)"
+        @click="onMinimapClick(currentPhoto)"
       />
 
       <PhotoKVRenderer
-        v-if="formatedExifData.basicInfo"
+        v-if="formatedExifData.basicInfo?.length"
         :data="formatedExifData.basicInfo"
       />
 
       <div
-        v-if="currentPhoto.exif?.Rating"
+        v-if="
+          currentPhoto.exif?.Rating && isPhotoInfoEnabled('sections.rating')
+        "
         class="flex items-center gap-2 justify-between"
       >
         <h4 class="text-sm font-medium text-white uppercase tracking-wide">
@@ -549,7 +664,11 @@ const onAlbumClick = (albumId: number) => {
 
       <!-- 相册 -->
       <div
-        v-if="albums && albums.length > 0"
+        v-if="
+          albums &&
+          albums.length > 0 &&
+          isPhotoInfoEnabled('sections.albums')
+        "
         class="mt-4"
       >
         <h4
@@ -579,7 +698,11 @@ const onAlbumClick = (albumId: number) => {
 
       <!-- 标签 -->
       <div
-        v-if="currentPhoto.tags && currentPhoto.tags.length > 0"
+        v-if="
+          currentPhoto.tags &&
+          currentPhoto.tags.length > 0 &&
+          isPhotoInfoEnabled('sections.tags')
+        "
         class="mt-4"
       >
         <h4
@@ -601,11 +724,14 @@ const onAlbumClick = (albumId: number) => {
         </div>
       </div>
       <PhotoKVRenderer
-        v-if="formatedExifData.captureParams"
+        v-if="formatedExifData.captureParams?.length"
         :data="formatedExifData.captureParams"
       />
 
-      <div class="space-y-2">
+      <div
+        v-if="isPhotoInfoEnabled('sections.histogram')"
+        class="space-y-2"
+      >
         <h4 class="text-sm font-medium text-white uppercase tracking-wide">
           {{ $t('exif.sections.histogram') }}
         </h4>
@@ -617,17 +743,17 @@ const onAlbumClick = (albumId: number) => {
       </div>
 
       <PhotoKVRenderer
-        v-if="formatedExifData.deviceInfo"
+        v-if="formatedExifData.deviceInfo?.length"
         :data="formatedExifData.deviceInfo"
       />
 
       <PhotoKVRenderer
-        v-if="formatedExifData.captureMode"
+        v-if="formatedExifData.captureMode?.length"
         :data="formatedExifData.captureMode"
       />
 
       <PhotoKVRenderer
-        v-if="formatedExifData.technicalParams"
+        v-if="formatedExifData.technicalParams?.length"
         :data="formatedExifData.technicalParams"
       />
     </div>

@@ -183,6 +183,115 @@ export const SYSTEM_SETTINGS_UI: Record<string, FieldUIConfig> = {
   },
 }
 
+const PHOTO_INFO_TOGGLE_KEYS = [
+  'sections.basicInfo',
+  'sections.rating',
+  'sections.albums',
+  'sections.tags',
+  'sections.shootingParameters',
+  'sections.histogram',
+  'sections.equipmentInformation',
+  'sections.shootingMode',
+  'sections.technicalParameters',
+  'basic.filename',
+  'basic.fileSize',
+  'basic.resolution',
+  'basic.pixels',
+  'basic.shootingTime',
+  'basic.colorSpace',
+  'basic.artist',
+  'basic.software',
+  'basic.timeZone',
+  'basic.country',
+  'basic.city',
+  'basic.coordinate',
+  'basic.miniMap',
+  'shooting.focalLength',
+  'shooting.aperture',
+  'shooting.exposureTime',
+  'shooting.iso',
+  'equipment.camera',
+  'equipment.lens',
+  'equipment.maxAperture',
+  'equipment.focalLength',
+  'equipment.equivalentFocalLength',
+  'mode.whiteBalance',
+  'mode.wbShiftAB',
+  'mode.wbShiftGM',
+  'mode.whiteBalanceBias',
+  'mode.whiteBalanceFineTune',
+  'mode.exposureProgram',
+  'mode.exposureMode',
+  'mode.meteringMode',
+  'mode.flash',
+  'mode.flashMeteringMode',
+  'mode.sceneCaptureType',
+  'technical.brightnessValue',
+  'technical.sensingMethod',
+  'technical.focalPlaneResolution',
+] as const
+
+export const PHOTO_INFO_SETTINGS_UI: Record<string, FieldUIConfig> = {
+  ...Object.fromEntries(
+    PHOTO_INFO_TOGGLE_KEYS.map((key) => [
+      key,
+      {
+        type: 'toggle' as const,
+        help: 'settings.photoInfo.item.help',
+      },
+    ]),
+  ),
+  'time.dateFormat': {
+    type: 'tabs',
+    options: [
+      {
+        label: 'settings.photoInfo.time.dateFormat.options.auto',
+        value: 'auto',
+        icon: 'tabler:language',
+      },
+      {
+        label: 'settings.photoInfo.time.dateFormat.options.us',
+        value: 'us',
+        icon: 'tabler:calendar',
+      },
+      {
+        label: 'settings.photoInfo.time.dateFormat.options.eu',
+        value: 'eu',
+        icon: 'tabler:calendar-week',
+      },
+      {
+        label: 'settings.photoInfo.time.dateFormat.options.cn',
+        value: 'cn',
+        icon: 'tabler:calendar-month',
+      },
+      {
+        label: 'settings.photoInfo.time.dateFormat.options.iso',
+        value: 'iso',
+        icon: 'tabler:code',
+      },
+    ],
+    help: 'settings.photoInfo.time.dateFormat.help',
+    visibleIf: { fieldKey: 'basic.shootingTime', value: true },
+  },
+  'time.timeFormat': {
+    type: 'tabs',
+    options: [
+      {
+        label: 'settings.photoInfo.time.timeFormat.options.12h',
+        value: '12h',
+        icon: 'tabler:clock-12',
+      },
+      {
+        label: 'settings.photoInfo.time.timeFormat.options.24h',
+        value: '24h',
+        icon: 'tabler:clock-24',
+      },
+    ],
+    help: 'settings.photoInfo.time.timeFormat.help',
+    visibleIf: { fieldKey: 'basic.shootingTime', value: true },
+  },
+}
+
 export const STORAGE_SETTINGS_UI: Record<string, FieldUIConfig> = {
   provider: {
     type: 'custom',
@@ -358,6 +467,7 @@ export function getSettingUIConfig(
     privacy: PRIVACY_SETTINGS_UI,
     map: MAP_SETTINGS_UI,
     location: LOCATION_SETTINGS_UI,
+    photoInfo: PHOTO_INFO_SETTINGS_UI,
     storage: STORAGE_SETTINGS_UI,
   }
 

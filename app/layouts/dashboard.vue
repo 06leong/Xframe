@@ -59,6 +59,11 @@ const navItems = computed<NavigationMenuItem[][]>(() => [
           to: '/dashboard/settings/privacy',
         },
         {
+          label: $t('title.photoInfoSettings'),
+          icon: 'tabler:info-circle',
+          to: '/dashboard/settings/photo-info',
+        },
+        {
           label: $t('title.mapAndLocation'),
           icon: 'tabler:map-pin',
           to: '/dashboard/settings/map',

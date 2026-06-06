@@ -14,9 +14,13 @@ const { isViewerOpen } = storeToRefs(useViewerState())
 const { photos } = usePhotos()
 
 const slug = computed(() => (route.params.slug as string[]) || [])
-const photoId = computed(() => slug.value[0] || null)
+const photoSlug = computed(() => slug.value[0] || null)
 const currentPhoto = computed(() =>
-  photos.value.find((photo) => photo.id === photoId.value),
+  photos.value.find(
+    (photo) =>
+      getPhotoPublicSlug(photo) === photoSlug.value ||
+      photo.id === photoSlug.value,
+  ),
 )
 
 defineOgImageComponent('Photo', {
@@ -39,7 +43,7 @@ const { clearAllFilters, toggleFilter } = usePhotoFilters()
 watch(
   () => route.query.tag,
   (tagParam) => {
-    if (tagParam && typeof tagParam === 'string' && !photoId.value) {
+    if (tagParam && typeof tagParam === 'string' && !photoSlug.value) {
       clearAllFilters()
       toggleFilter('tags', tagParam)
 
@@ -50,13 +54,19 @@ watch(
 )
 
 watch(
-  [photoId, photos],
-  ([currentPhotoId, currentPhotos]) => {
-    if (currentPhotoId && currentPhotos.length > 0) {
+  [photoSlug, photos],
+  ([currentPhotoSlug, currentPhotos]) => {
+    if (currentPhotoSlug && currentPhotos.length > 0) {
       const foundIndex = currentPhotos.findIndex(
-        (photo) => photo.id === currentPhotoId,
+        (photo) =>
+          getPhotoPublicSlug(photo) === currentPhotoSlug ||
+          photo.id === currentPhotoSlug,
       )
       if (foundIndex !== -1) {
+        const foundPhoto = currentPhotos[foundIndex]
+        if (foundPhoto && getPhotoPublicSlug(foundPhoto) !== currentPhotoSlug) {
+          router.replace(getPhotoPublicPath(foundPhoto))
+        }
         useHead({
           title: currentPhotos[foundIndex]?.title || $t('title.fallback.photo'),
         })
@@ -67,7 +77,7 @@ watch(
           switchToIndex(foundIndex)
         }
       }
-    } else if (!currentPhotoId) {
+    } else if (!currentPhotoSlug) {
       closeViewer()
       useHead({
         title: '',
