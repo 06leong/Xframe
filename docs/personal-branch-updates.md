@@ -10,6 +10,11 @@ This document tracks the changes maintained on the `personal` branch of this Chr
 
 ## Version History
 
+### v0.41
+
+- Fixed a production compatibility issue where photo list APIs could return no photos if the deployed SQLite database had not received the new `public_slug` column before Drizzle selected photo rows.
+- Unified runtime database opening with `DATABASE_URL` and added a defensive startup schema guard for the personal public photo slug column and index.
+
 ### v0.4
 
 - Added dashboard settings for controlling which photo information sections and individual metadata fields are shown in the public photo viewer.
