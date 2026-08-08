@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import dayjsLocale_zhCN from 'dayjs/locale/zh-cn'
 import dayjsLocale_zhTW from 'dayjs/locale/zh-tw'
-import dayjsLocale_zhHK from 'dayjs/locale/zh-hk'
 
 const router = useRouter()
 const dayjs = useDayjs()
@@ -52,12 +51,21 @@ const { data, refresh, status } = await useFetch(() => apiEndpoint.value, {
 const photos = computed(() => (data.value as Photo[]) || [])
 
 const { switchToIndex, closeViewer, clearReturnRoute } = useViewerState()
-const { currentPhotoIndex, isViewerOpen, returnRoute, isDirectAccess } =
-  storeToRefs(useViewerState())
+const {
+  currentPhotoIndex,
+  isViewerOpen,
+  returnRoute,
+  isDirectAccess,
+  scopedPhotos,
+} = storeToRefs(useViewerState())
+
+// The photo collection the viewer actually navigates: the scoped list (e.g. an
+// album) when present, otherwise the global list.
+const viewerPhotos = computed(() => scopedPhotos.value ?? photos.value)
 
 const handleIndexChange = (newIndex: number) => {
   switchToIndex(newIndex)
-  router.replace(getPhotoPublicPath(photos.value[newIndex]))
+  router.replace(getPhotoPublicPath(viewerPhotos.value[newIndex]))
 }
 
 const handleClose = () => {
@@ -84,8 +92,7 @@ const handleClose = () => {
 
 watchEffect(() => {
   dayjs.locale('zh-Hans', dayjsLocale_zhCN)
-  dayjs.locale('zh-Hant-TW', dayjsLocale_zhTW)
-  dayjs.locale('zh-Hant-HK', dayjsLocale_zhHK)
+  dayjs.locale('zh-Hant', dayjsLocale_zhTW)
   dayjs.locale(localeRef.value)
 })
 
@@ -117,7 +124,7 @@ provide(
       </NuxtLayout>
       <ClientOnly>
         <PhotoViewer
-          :photos="photos"
+          :photos="viewerPhotos"
           :current-index="currentPhotoIndex"
           :is-open="isViewerOpen"
           @close="handleClose"

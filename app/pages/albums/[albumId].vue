@@ -21,7 +21,7 @@ const {
 if (error.value) {
   throw createError({
     statusCode: 404,
-    statusMessage: 'Album not found',
+    statusMessage: $t('album.notFound'),
   })
 }
 
@@ -96,7 +96,9 @@ const handleOpenViewer = (index: number) => {
   if (photos && photos[index]) {
     const { openViewer } = useViewerState()
     const albumRoute = `/albums/${albumId.value}`
-    openViewer(0, albumRoute)
+    // Scope the viewer to the album's photos so prev/next stays within this album.
+    // The fetched photos are serialized rows of the same shape as Photo.
+    openViewer(index, albumRoute, photos as Photo[])
     router.push(getPhotoPublicPath(photos[index]))
   }
 }
@@ -143,7 +145,7 @@ onUnmounted(() => {
 
 onBeforeMount(() => {
   useHead({
-    title: albumData.value ? albumData.value.title : 'Album Not Found',
+    title: albumData.value ? albumData.value.title : $t('album.notFound'),
   })
 })
 </script>
@@ -253,7 +255,7 @@ onBeforeMount(() => {
                 <!-- Created -->
                 <div
                   class="flex items-center gap-1"
-                  :title="`Created: ${$dayjs(albumData.createdAt).format('YYYY-MM-DD HH:mm:ss')}`"
+                  :title="$t('album.createdTooltip', { date: $dayjs(albumData.createdAt).format('YYYY-MM-DD HH:mm:ss') })"
                 >
                   <Icon
                     name="tabler:clock-plus"
@@ -360,14 +362,14 @@ onBeforeMount(() => {
       :exit="{ opacity: 0, scale: 0.8 }"
       :transition="{ duration: 0.2 }"
     >
-      <UTooltip :text="$t('ui.action.backtotop.tooltip') || '回到顶部'">
+      <UTooltip :text="$t('ui.action.backtotop.tooltip')">
         <UButton
           variant="soft"
           color="neutral"
           class="cursor-pointer bg-white/80 dark:bg-neutral-900/80 backdrop-blur-sm flex justify-center items-center rounded-full shadow-lg hover:bg-white dark:hover:bg-neutral-800 transition-all duration-300 border border-neutral-200/50 dark:border-neutral-700/50"
           icon="tabler:arrow-up"
           size="lg"
-          :aria-label="$t('ui.action.backtotop.ariaLabel') || '回到顶部'"
+          :aria-label="$t('ui.action.backtotop.ariaLabel')"
           @click="scrollToTop"
         />
       </UTooltip>

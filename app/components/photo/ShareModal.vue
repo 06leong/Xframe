@@ -35,15 +35,9 @@ const shareTextAndUrl = computed(() => {
 const ogImageLoading = ref(true)
 const ogImageError = ref(false)
 const loadingTimer = ref<NodeJS.Timeout | null>(null)
-
-const ogImageUrl = computed(() => {
-  if (typeof window !== 'undefined') {
-    // Add timestamp to prevent caching issues
-    const timestamp = Date.now()
-    return `${window.location.origin}/__og-image__/image/${getPhotoPublicSlug(props.photo)}/og.png?t=${timestamp}`
-  }
-  return ''
-})
+const ogImageUrl = computed(
+  () => `/_og/r/${encodeURIComponent(getPhotoPublicSlug(props.photo))}.png`,
+)
 
 // Reset loading state when photo changes or modal opens
 const resetLoadingState = () => {
@@ -203,7 +197,7 @@ const copyLink = async () => {
   } catch (error) {
     toast.add({
       title: $t('ui.action.share.error.linkCopyFailed'),
-      description: (error as Error)?.message || 'Unknown error',
+      description: (error as Error)?.message || $t('common.unknownError'),
       color: 'error',
       icon: 'tabler:x',
       duration: 3000,
@@ -255,7 +249,7 @@ const downloadOgImage = async () => {
   } catch (error) {
     toast.add({
       title: $t('ui.action.share.error.ogImageDownloadFailed'),
-      description: (error as Error)?.message || 'Unknown error',
+      description: (error as Error)?.message || $t('common.unknownError'),
       color: 'error',
       icon: 'tabler:x',
       duration: 3000,
@@ -293,7 +287,7 @@ const downloadOriginalImage = async () => {
   } catch (error) {
     toast.add({
       title: $t('ui.action.share.error.originalImageDownloadFailed'),
-      description: (error as Error)?.message || 'Unknown error',
+      description: (error as Error)?.message || $t('common.unknownError'),
       color: 'error',
       icon: 'tabler:x',
       duration: 3000,

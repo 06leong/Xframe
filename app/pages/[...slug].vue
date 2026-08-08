@@ -1,7 +1,6 @@
 <script lang="ts" setup>
 definePageMeta({
   layout: 'masonry',
-  // 固定 key 防止路径参数变化时创建新的实例
   key: 'photo-viewer-route',
 })
 
@@ -9,7 +8,7 @@ const route = useRoute()
 const router = useRouter()
 
 const { switchToIndex, closeViewer, openViewer } = useViewerState()
-const { isViewerOpen } = storeToRefs(useViewerState())
+const { isViewerOpen, scopedPhotos } = storeToRefs(useViewerState())
 
 const { photos } = usePhotos()
 
@@ -23,30 +22,18 @@ const currentPhoto = computed(() =>
   ),
 )
 
-defineOgImageComponent('Photo', {
-  headline: currentPhoto.value ? 'PHOTO' : 'ChronoFrame',
-  title: currentPhoto.value?.title || getSetting('app:title'),
-  description: currentPhoto.value
-    ? currentPhoto.value.description
-    : getSetting('app:title'),
-  thumbnailJpegUrl:
-    currentPhoto.value && currentPhoto.value.thumbnailKey
-      ? `/thumb/${encodeURIComponent(currentPhoto.value.thumbnailUrl || '')}`
-      : undefined,
+defineOgImage('Photo', {
   photo: currentPhoto.value || undefined,
 })
 
-// 处理标签查询参数
 const { clearAllFilters, toggleFilter } = usePhotoFilters()
 
-// 监听路由查询参数中的标签
 watch(
   () => route.query.tag,
   (tagParam) => {
     if (tagParam && typeof tagParam === 'string' && !photoSlug.value) {
       clearAllFilters()
       toggleFilter('tags', tagParam)
-
       router.replace('/')
     }
   },
@@ -55,33 +42,42 @@ watch(
 
 watch(
   [photoSlug, photos],
-  ([currentPhotoSlug, currentPhotos]) => {
-    if (currentPhotoSlug && currentPhotos.length > 0) {
-      const foundIndex = currentPhotos.findIndex(
-        (photo) =>
-          getPhotoPublicSlug(photo) === currentPhotoSlug ||
-          photo.id === currentPhotoSlug,
-      )
-      if (foundIndex !== -1) {
-        const foundPhoto = currentPhotos[foundIndex]
-        if (foundPhoto && getPhotoPublicSlug(foundPhoto) !== currentPhotoSlug) {
-          router.replace(getPhotoPublicPath(foundPhoto))
-        }
-        useHead({
-          title: currentPhotos[foundIndex]?.title || $t('title.fallback.photo'),
-        })
-        if (!isViewerOpen.value) {
-          // 直接访问照片详情页时，不设置 returnRoute（传入 null）
-          openViewer(foundIndex, null)
-        } else {
-          switchToIndex(foundIndex)
-        }
-      }
-    } else if (!currentPhotoSlug) {
+  ([currentPhotoSlug, globalPhotos]) => {
+    if (!currentPhotoSlug) {
       closeViewer()
-      useHead({
-        title: '',
-      })
+      useHead({ title: '' })
+      return
+    }
+
+    // Keep an existing album scope while navigating; direct access uses the
+    // global photo list and openViewer resets any previous scope.
+    const activePhotos =
+      isViewerOpen.value && scopedPhotos.value
+        ? scopedPhotos.value
+        : globalPhotos
+
+    if (activePhotos.length === 0) return
+
+    const foundIndex = activePhotos.findIndex(
+      (photo) =>
+        getPhotoPublicSlug(photo) === currentPhotoSlug ||
+        photo.id === currentPhotoSlug,
+    )
+    if (foundIndex === -1) return
+
+    const foundPhoto = activePhotos[foundIndex]
+    if (foundPhoto && getPhotoPublicSlug(foundPhoto) !== currentPhotoSlug) {
+      router.replace(getPhotoPublicPath(foundPhoto))
+    }
+
+    useHead({
+      title: foundPhoto?.title || $t('title.fallback.photo'),
+    })
+
+    if (!isViewerOpen.value) {
+      openViewer(foundIndex, null)
+    } else {
+      switchToIndex(foundIndex)
     }
   },
   { immediate: true },

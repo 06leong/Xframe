@@ -85,6 +85,13 @@
       "when": 1780704000000,
       "tag": "0011_personal_public_photo_slug",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "6",
+      "when": 1784142342471,
+      "tag": "0012_update_location_language_enum",
+      "breakpoints": true
     }
   ]
 }

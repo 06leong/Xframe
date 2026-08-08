@@ -68,16 +68,13 @@ const searchLanguage = computed(() => {
     language === 'zh-TW' ||
     language === 'zh-HK' ||
     language === 'zh-Hans' ||
+    language === 'zh-Hant' ||
     language.startsWith('zh-TW') ||
     language.startsWith('zh-HK') ||
     language.startsWith('zh-CN') ||
     language.startsWith('zh-Hans')
   ) {
     return 'zh'
-  }
-
-  if (language.startsWith('ja')) {
-    return 'ja'
   }
 
   return 'en'

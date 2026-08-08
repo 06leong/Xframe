@@ -127,7 +127,7 @@ const isAboutOpen = ref(false)
                 "
                 class="size-16 rounded-full object-cover"
                 :class="!loggedIn && 'cursor-pointer'"
-                alt="Author's avatar"
+                :alt="$t('ui.photo.avatarAlt')"
                 @click="!loggedIn && handleOpenLogin()"
               />
             </div>

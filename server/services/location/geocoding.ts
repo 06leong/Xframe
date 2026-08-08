@@ -69,7 +69,7 @@ export class MapboxGeocodingProvider implements GeocodingProvider {
           if (language) {
             // 映射 Mapbox 首选语言格式
             let mapboxLang = language
-            if (language === 'zh-CN') {
+            if (language === 'zh' || language === 'zh-CN') {
               mapboxLang = 'zh-Hans'
             } else if (language === 'zh-TW') {
               mapboxLang = 'zh-Hant'
