@@ -11,7 +11,7 @@ defineProps<{
 }>()
 
 const router = useRouter()
-// const config = useRuntimeConfig()
+const runtimeConfig = useRuntimeConfig()
 const colorMode = useColorMode()
 
 const isDark = computed({
@@ -96,6 +96,22 @@ watch(appSlogan, (slogan) => {
 onBeforeUnmount(stopTypewriter)
 
 const isAboutOpen = ref(false)
+const aboutTitle = computed(
+  () => (getSetting('app:about.title') as string) || '',
+)
+const aboutButtonLabel = computed(() => aboutTitle.value || 'About')
+const aboutSubtitle = computed(
+  () => (getSetting('app:about.subtitle') as string) || '',
+)
+const aboutMarkdown = computed(
+  () => (getSetting('app:about.markdown') as string) || '',
+)
+const aboutAttribution = computed(() =>
+  formatAboutAttribution(
+    getSetting('app:about.attribution'),
+    runtimeConfig.public.VERSION,
+  ),
+)
 </script>
 
 <template>
@@ -322,7 +338,7 @@ const isAboutOpen = ref(false)
             class="hover:underline inline-flex items-center gap-0.5 cursor-pointer"
             @click="isAboutOpen = true"
           >
-            About
+            {{ aboutButtonLabel }}
           </button>
         </div>
       </div>
@@ -330,17 +346,23 @@ const isAboutOpen = ref(false)
     <UModal
       v-model:open="isAboutOpen"
       portal
-      :ui="{ content: 'max-w-md' }"
+      :ui="{ content: 'max-w-lg' }"
     >
       <template #content>
         <div class="p-5 space-y-4">
           <div class="flex items-start justify-between gap-4">
             <div>
-              <h2 class="text-lg font-semibold text-neutral-900 dark:text-white">
-                About
+              <h2
+                v-if="aboutTitle"
+                class="text-lg font-semibold text-neutral-900 dark:text-white"
+              >
+                {{ aboutTitle }}
               </h2>
-              <p class="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
-                Personal photo gallery
+              <p
+                v-if="aboutSubtitle"
+                class="mt-1 text-xs text-neutral-500 dark:text-neutral-400"
+              >
+                {{ aboutSubtitle }}
               </p>
             </div>
             <UButton
@@ -352,20 +374,16 @@ const isAboutOpen = ref(false)
               @click="isAboutOpen = false"
             />
           </div>
-          <div
-            class="space-y-3 text-sm leading-6 text-neutral-600 dark:text-neutral-300"
+          <SafeMarkdown
+            v-if="aboutMarkdown"
+            :source="aboutMarkdown"
+            class="max-h-[60vh] overflow-y-auto text-sm leading-6 text-neutral-600 dark:text-neutral-300"
+          />
+          <p
+            v-if="aboutAttribution"
+            class="text-xs text-neutral-400 dark:text-neutral-500"
           >
-            <p>
-              ChronoFrame is a self-hosted personal photo gallery for browsing
-              photos with EXIF metadata and map-based location views.
-            </p>
-            <p>
-              This fork is maintained for my personal website and future
-              customization experiments.
-            </p>
-          </div>
-          <p class="text-xs text-neutral-400 dark:text-neutral-500">
-            Based on ChronoFrame v{{ $config.public.VERSION }}.
+            {{ aboutAttribution }}
           </p>
         </div>
       </template>

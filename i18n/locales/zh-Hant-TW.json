@@ -1032,6 +1032,29 @@
         "description": "所有者頭像的圖片連結",
         "help": "頭像顯示加載頁面和首頁頭像中"
       },
+      "about": {
+        "sectionTitle": "關於彈窗",
+        "sectionDescription": "無需重新建置或部署應用程式，即可管理公開顯示的 About 彈窗。",
+        "previewTitle": "即時預覽",
+        "title": {
+          "label": "標題",
+          "description": "About 按鈕和彈窗使用的標題"
+        },
+        "subtitle": {
+          "label": "副標題",
+          "description": "顯示在標題下方的選填簡短說明"
+        },
+        "markdown": {
+          "label": "Markdown 內容",
+          "description": "About 彈窗的主要內容",
+          "help": "已停用原始 HTML 和圖片；支援 HTTP、HTTPS、郵件、站內相對連結和錨點。"
+        },
+        "attribution": {
+          "label": "歸屬文字",
+          "description": "顯示在內容下方的選填歸屬說明",
+          "help": "使用 {version} 插入目前應用程式版本；留空即可隱藏。"
+        }
+      },
       "appearance": {
         "theme": {
           "label": "主題",

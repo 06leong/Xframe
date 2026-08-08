@@ -78,10 +78,20 @@ export function useSettingsForm(namespace: string) {
         value,
       }))
 
-      await $fetch('/api/system/settings/batch', {
+      const response = await $fetch<{
+        success: boolean
+        errors?: Array<{ namespace: string; key: string; error: string }>
+      }>('/api/system/settings/batch', {
         method: 'PUT',
         body: { updates },
       })
+
+      if (!response.success) {
+        const message = response.errors
+          ?.map(({ namespace, key, error }) => `${namespace}:${key}: ${error}`)
+          .join('; ')
+        throw new Error(message || 'Failed to update settings')
+      }
 
       // 刷新全局设置状态，确保所有使用 getSetting() 的地方都能获取到最新值
       await refreshSettings()

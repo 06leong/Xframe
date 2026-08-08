@@ -35,7 +35,7 @@ jobs:
           short_sha="${GITHUB_SHA::7}"
           version="$(tr -d '[:space:]' < personal-image-version.txt)"
 
-          if [[ ! "$version" =~ ^v[0-9]+(\.[0-9]+){1,2}$ ]]; then
+          if [[ ! "$version" =~ ^personal-[0-9A-Za-z]+([._-][0-9A-Za-z]+)*$ ]]; then
             echo "Invalid personal image version: $version" >&2
             exit 1
           fi

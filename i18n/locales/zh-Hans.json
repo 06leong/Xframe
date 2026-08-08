@@ -1106,6 +1106,29 @@
         "description": "所有者头像的图片链接",
         "help": "头像显示加载页面和首页头像中"
       },
+      "about": {
+        "sectionTitle": "关于弹窗",
+        "sectionDescription": "无需重新构建或部署应用，即可管理公开显示的 About 弹窗。",
+        "previewTitle": "实时预览",
+        "title": {
+          "label": "标题",
+          "description": "About 按钮和弹窗使用的标题"
+        },
+        "subtitle": {
+          "label": "副标题",
+          "description": "显示在标题下方的可选简短说明"
+        },
+        "markdown": {
+          "label": "Markdown 正文",
+          "description": "About 弹窗的主要内容",
+          "help": "已禁用原始 HTML 和图片；支持 HTTP、HTTPS、邮件、站内相对链接和锚点。"
+        },
+        "attribution": {
+          "label": "归属文字",
+          "description": "显示在正文下方的可选归属说明",
+          "help": "使用 {version} 插入当前应用版本；留空即可隐藏。"
+        }
+      },
       "appearance": {
         "theme": {
           "label": "主题",

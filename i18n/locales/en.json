@@ -1106,6 +1106,29 @@
         "description": "Link to the owner's avatar image",
         "help": "The avatar is displayed on the loading page and homepage"
       },
+      "about": {
+        "sectionTitle": "About dialog",
+        "sectionDescription": "Manage the public About dialog without rebuilding or redeploying the application.",
+        "previewTitle": "Live preview",
+        "title": {
+          "label": "Title",
+          "description": "Title used by the About button and dialog"
+        },
+        "subtitle": {
+          "label": "Subtitle",
+          "description": "Optional short description shown below the title"
+        },
+        "markdown": {
+          "label": "Markdown content",
+          "description": "Main content of the About dialog",
+          "help": "Raw HTML and images are disabled. HTTP, HTTPS, email, relative and anchor links are supported."
+        },
+        "attribution": {
+          "label": "Attribution",
+          "description": "Optional attribution shown below the content",
+          "help": "Use {version} to insert the current application version. Leave blank to hide it."
+        }
+      },
       "appearance": {
         "theme": {
           "label": "Theme",

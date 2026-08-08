@@ -1,5 +1,6 @@
 import i18nOptions from '~~/i18n/i18n.options'
 import type { FieldUIConfig } from '~~/shared/types/settings'
+import { ABOUT_SETTING_LIMITS } from '~~/shared/utils/about-settings'
 
 /**
  * Extended settings configuration with UI descriptions
@@ -29,6 +30,29 @@ export const APP_SETTINGS_UI: Record<string, FieldUIConfig> = {
     type: 'url',
     placeholder: 'https://example.com/avatar.jpg',
     help: 'settings.app.avatarUrl.help',
+  },
+  'about.title': {
+    type: 'input',
+    placeholder: 'About',
+    maxLength: ABOUT_SETTING_LIMITS['about.title'],
+  },
+  'about.subtitle': {
+    type: 'input',
+    placeholder: 'Personal photo gallery',
+    maxLength: ABOUT_SETTING_LIMITS['about.subtitle'],
+  },
+  'about.markdown': {
+    type: 'textarea',
+    rows: 12,
+    placeholder: 'Describe this gallery using Markdown.',
+    help: 'settings.app.about.markdown.help',
+    maxLength: ABOUT_SETTING_LIMITS['about.markdown'],
+  },
+  'about.attribution': {
+    type: 'input',
+    placeholder: 'Based on ChronoFrame v{version}.',
+    help: 'settings.app.about.attribution.help',
+    maxLength: ABOUT_SETTING_LIMITS['about.attribution'],
   },
   'appearance.theme': {
     type: 'tabs',
@@ -136,7 +160,7 @@ export const ANALYTICS_SETTINGS_UI: Record<string, FieldUIConfig> = {
     type: 'textarea',
     rows: 12,
     placeholder:
-      '<!-- Google Analytics -->\n<script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXX"></script>\n<script>\n  window.dataLayer = window.dataLayer || [];\n  function gtag(){dataLayer.push(arguments);}\n  gtag(\'js\', new Date());\n  gtag(\'config\', \'G-XXXX\');\n</script>',
+      "<!-- Google Analytics -->\n<script async src=\"https://www.googletagmanager.com/gtag/js?id=G-XXXX\"></script>\n<script>\n  window.dataLayer = window.dataLayer || [];\n  function gtag(){dataLayer.push(arguments);}\n  gtag('js', new Date());\n  gtag('config', 'G-XXXX');\n</script>",
     help: 'settings.analytics.headScripts.help',
   },
   bodyScripts: {

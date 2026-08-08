@@ -1,5 +1,6 @@
 import type { SettingConfig } from '~~/shared/types/settings'
 import i18nOptions from '~~/i18n/i18n.options'
+import { ABOUT_SETTING_DEFAULTS } from '~~/shared/utils/about-settings'
 
 // 存储提供商的枚举值
 export const STORAGE_PROVIDERS = ['local', 's3', 'openlist'] as const
@@ -110,6 +111,42 @@ export const DEFAULT_SETTINGS = [
     defaultValue: '',
     label: 'settings.app.avatarUrl.label',
     description: 'settings.app.avatarUrl.description',
+    isPublic: true,
+  },
+  {
+    namespace: 'app',
+    key: 'about.title',
+    type: 'string',
+    defaultValue: ABOUT_SETTING_DEFAULTS['about.title'],
+    label: 'settings.app.about.title.label',
+    description: 'settings.app.about.title.description',
+    isPublic: true,
+  },
+  {
+    namespace: 'app',
+    key: 'about.subtitle',
+    type: 'string',
+    defaultValue: ABOUT_SETTING_DEFAULTS['about.subtitle'],
+    label: 'settings.app.about.subtitle.label',
+    description: 'settings.app.about.subtitle.description',
+    isPublic: true,
+  },
+  {
+    namespace: 'app',
+    key: 'about.markdown',
+    type: 'string',
+    defaultValue: ABOUT_SETTING_DEFAULTS['about.markdown'],
+    label: 'settings.app.about.markdown.label',
+    description: 'settings.app.about.markdown.description',
+    isPublic: true,
+  },
+  {
+    namespace: 'app',
+    key: 'about.attribution',
+    type: 'string',
+    defaultValue: ABOUT_SETTING_DEFAULTS['about.attribution'],
+    label: 'settings.app.about.attribution.label',
+    description: 'settings.app.about.attribution.description',
     isPublic: true,
   },
   {

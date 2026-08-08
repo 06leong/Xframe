@@ -5,6 +5,7 @@ import type {
   SettingType,
   SettingValue,
 } from '~~/shared/types/settings'
+import { validateAboutSettingValue } from '~~/shared/utils/about-settings'
 import type { SettingKey, SettingNamespace } from './contants'
 
 export class SettingsManager {
@@ -58,6 +59,14 @@ export class SettingsManager {
       return true
     }
     return enumValues.includes(String(value))
+  }
+
+  private validateValue(
+    namespace: SettingNamespace,
+    key: SettingKey<typeof namespace>,
+    value: SettingValue,
+  ): void {
+    validateAboutSettingValue(namespace, key, value)
   }
 
   /**
@@ -241,6 +250,8 @@ export class SettingsManager {
       )
       throw new Error(`Setting ${namespace}:${key} is readonly`)
     }
+
+    this.validateValue(namespace, key, value)
 
     if (!this.validateEnum(value, existing.enum)) {
       this._logger.warn(

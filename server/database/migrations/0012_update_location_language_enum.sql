@@ -1,6 +1,7 @@
 UPDATE `settings`
 SET `enum` = '["zh","zh-TW","en"]'
 WHERE `namespace` = 'location' AND `key` = 'language';
+--> statement-breakpoint
 
 UPDATE `settings`
 SET `value` = CASE
