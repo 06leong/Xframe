@@ -39,7 +39,11 @@ const readLastLines = async (
     let content = ''
     let newlineCount = 0
 
-    while (position > 0 && newlineCount <= maxLines && totalReadBytes < maxReadBytes) {
+    while (
+      position > 0 &&
+      newlineCount <= maxLines &&
+      totalReadBytes < maxReadBytes
+    ) {
       const readSize = Math.min(chunkSize, position)
       const start = position - readSize
       const chunk = Buffer.allocUnsafe(readSize)
@@ -169,7 +173,10 @@ export default defineEventHandler(async (event) => {
         lastReadOffset = 0
       }
 
-      const { lines, nextOffset } = await streamNewLines(logFilePath, lastReadOffset)
+      const { lines, nextOffset } = await streamNewLines(
+        logFilePath,
+        lastReadOffset,
+      )
       for (const line of lines) {
         if (isClosed) {
           return

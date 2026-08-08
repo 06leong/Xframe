@@ -255,7 +255,13 @@ onBeforeMount(() => {
                 <!-- Created -->
                 <div
                   class="flex items-center gap-1"
-                  :title="$t('album.createdTooltip', { date: $dayjs(albumData.createdAt).format('YYYY-MM-DD HH:mm:ss') })"
+                  :title="
+                    $t('album.createdTooltip', {
+                      date: $dayjs(albumData.createdAt).format(
+                        'YYYY-MM-DD HH:mm:ss',
+                      ),
+                    })
+                  "
                 >
                   <Icon
                     name="tabler:clock-plus"

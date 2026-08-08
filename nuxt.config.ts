@@ -242,8 +242,8 @@ export default defineNuxtConfig({
 
   fonts: {
     families: [
-      { name: "Rubik", weights: [400, 500, 600, 700], global: true },
-      { name: "Noto Sans SC", weights: [400, 500, 600, 700], global: true },
+      { name: 'Rubik', weights: [400, 500, 600, 700], global: true },
+      { name: 'Noto Sans SC', weights: [400, 500, 600, 700], global: true },
     ],
   },
 

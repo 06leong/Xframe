@@ -107,7 +107,8 @@ const sizeDelta = computed(() => {
               <ThumbImage
                 :src="representativePhoto.thumbnailUrl!"
                 :alt="
-                  representativePhoto.title || $t('map.cluster.altFallback', { id: representativePhoto.id })
+                  representativePhoto.title ||
+                  $t('map.cluster.altFallback', { id: representativePhoto.id })
                 "
                 :thumbhash="representativePhoto.thumbnailHash"
                 :threshold="0.1"
@@ -206,7 +207,10 @@ const sizeDelta = computed(() => {
                       >
                         <ThumbImage
                           :src="photo.thumbnailUrl!"
-                          :alt="photo.title || $t('map.photo.altFallback', { id: photo.id })"
+                          :alt="
+                            photo.title ||
+                            $t('map.photo.altFallback', { id: photo.id })
+                          "
                           :thumbhash="photo.thumbnailHash"
                           :threshold="0.1"
                           root-margin="200px"

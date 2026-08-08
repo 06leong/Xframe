@@ -36,9 +36,7 @@ const shootingTimeFormat = computed(() => {
   const dateFormat = String(
     photoInfoSettings.value['time.dateFormat'] || 'auto',
   )
-  const timeFormat = String(
-    photoInfoSettings.value['time.timeFormat'] || '12h',
-  )
+  const timeFormat = String(photoInfoSettings.value['time.timeFormat'] || '12h')
   const timePattern = timeFormat === '24h' ? 'HH:mm' : 'h:mm A'
 
   switch (dateFormat) {
@@ -665,9 +663,7 @@ const onAlbumClick = (albumId: number) => {
       <!-- 相册 -->
       <div
         v-if="
-          albums &&
-          albums.length > 0 &&
-          isPhotoInfoEnabled('sections.albums')
+          albums && albums.length > 0 && isPhotoInfoEnabled('sections.albums')
         "
         class="mt-4"
       >

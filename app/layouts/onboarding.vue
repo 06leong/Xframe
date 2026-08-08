@@ -9,7 +9,10 @@ const steps = computed(() => [
   { label: $t('onboarding.layout.steps.site'), route: 'onboarding-site' },
   { label: $t('onboarding.layout.steps.storage'), route: 'onboarding-storage' },
   { label: $t('onboarding.layout.steps.map'), route: 'onboarding-map' },
-  { label: $t('onboarding.layout.steps.complete'), route: 'onboarding-complete' },
+  {
+    label: $t('onboarding.layout.steps.complete'),
+    route: 'onboarding-complete',
+  },
 ])
 
 const currentStepIndex = computed(() => {
@@ -215,7 +218,12 @@ const currentStepIndex = computed(() => {
             <span class="font-bold">ChronoFrame</span>
           </div>
           <div class="text-sm text-neutral-400">
-            {{ $t('onboarding.layout.stepCounter', [currentStepIndex + 1, steps.length]) }}
+            {{
+              $t('onboarding.layout.stepCounter', [
+                currentStepIndex + 1,
+                steps.length,
+              ])
+            }}
           </div>
         </div>
 

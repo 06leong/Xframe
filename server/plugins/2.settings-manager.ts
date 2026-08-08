@@ -105,7 +105,13 @@ async function migrateRuntimeConfigToSettings() {
     for (const [key, value] of Object.entries(githubOauthSettings)) {
       if (typeof value === 'string' && value.length > 0) {
         try {
-          await settingsManager.set('system', key as any, value, undefined, true)
+          await settingsManager.set(
+            'system',
+            key as any,
+            value,
+            undefined,
+            true,
+          )
           _logger.debug(`Migrated system.${key}`)
         } catch (error) {
           _logger.warn(`Failed to migrate system.${key}:`, error)
@@ -134,7 +140,8 @@ async function migrateRuntimeConfigToSettings() {
         } else {
           try {
             // Check if a provider of the same type already exists
-            const existingProviders = await settingsManager.storage.getProviders()
+            const existingProviders =
+              await settingsManager.storage.getProviders()
             const sameTypeProviderExists = existingProviders.some(
               (provider) => provider.provider === storageProvider,
             )
@@ -281,9 +288,9 @@ function isRuntimeProviderConfigUsable(config: any): boolean {
     case 's3':
       return Boolean(
         config.endpoint &&
-          config.bucket &&
-          config.accessKeyId &&
-          config.secretAccessKey,
+        config.bucket &&
+        config.accessKeyId &&
+        config.secretAccessKey,
       )
     case 'local':
       return Boolean(config.basePath)

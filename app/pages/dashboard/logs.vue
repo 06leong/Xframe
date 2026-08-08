@@ -21,7 +21,9 @@ const selectedLevels = ref<string[]>([])
 const selectedTags = ref<string[]>([])
 const autoScroll = ref(true)
 const isConnected = ref(false)
-const connectionState = ref<'idle' | 'connecting' | 'loadingHistory' | 'live' | 'error'>('idle')
+const connectionState = ref<
+  'idle' | 'connecting' | 'loadingHistory' | 'live' | 'error'
+>('idle')
 const logContainer = ref<HTMLElement>()
 const isInitialLoading = ref(false)
 const loadingProgress = ref(0)
@@ -267,7 +269,10 @@ const getLogLineStyle = (log: LogEntry) => {
 const getConnectionStatusClass = () => {
   if (connectionState.value === 'live') {
     return 'text-success'
-  } else if (connectionState.value === 'connecting' || connectionState.value === 'loadingHistory') {
+  } else if (
+    connectionState.value === 'connecting' ||
+    connectionState.value === 'loadingHistory'
+  ) {
     return 'text-info'
   } else if (connectionState.value === 'error') {
     return 'text-error'
@@ -286,7 +291,10 @@ const getConnectionStatusColor = ():
   if (connectionState.value === 'live') {
     return 'success'
   }
-  if (connectionState.value === 'connecting' || connectionState.value === 'loadingHistory') {
+  if (
+    connectionState.value === 'connecting' ||
+    connectionState.value === 'loadingHistory'
+  ) {
     return 'info'
   }
   if (connectionState.value === 'error') {
@@ -491,8 +499,15 @@ onUnmounted(() => {
               <div
                 class="mt-1 flex items-center gap-2 text-xs text-neutral-500 dark:text-neutral-400"
               >
-                <span>{{ $t('dashboard.logs.countLabel', { total: logs.length, shown: filteredLogs.length }) }}</span>
-                <span v-if="availableTags.length">{{ $t('dashboard.logs.tagCount', { count: availableTags.length }) }}</span>
+                <span>{{
+                  $t('dashboard.logs.countLabel', {
+                    total: logs.length,
+                    shown: filteredLogs.length,
+                  })
+                }}</span>
+                <span v-if="availableTags.length">{{
+                  $t('dashboard.logs.tagCount', { count: availableTags.length })
+                }}</span>
               </div>
             </div>
             <span
@@ -677,7 +692,9 @@ onUnmounted(() => {
               v-if="filteredLogs.length === 0"
               class="text-center py-8 text-gray-500 dark:text-gray-400 absolute inset-0"
             >
-              <div v-if="logs.length === 0">{{ $t('dashboard.logs.empty.waiting') }}</div>
+              <div v-if="logs.length === 0">
+                {{ $t('dashboard.logs.empty.waiting') }}
+              </div>
               <div v-else>{{ $t('dashboard.logs.empty.noMatch') }}</div>
             </div>
           </div>

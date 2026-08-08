@@ -83,7 +83,9 @@ const i18nLocale = computed<Locale>(() => ({
   more: t('common.heatmap.legend.more'),
 }))
 
-const effectiveTooltipUnit = computed(() => props.tooltipUnit ?? t('ui.calendarHeatmap.contributions'))
+const effectiveTooltipUnit = computed(
+  () => props.tooltipUnit ?? t('ui.calendarHeatmap.contributions'),
+)
 
 const BASE_SQUARE_SIZE = 10
 const DAYS_IN_WEEK = 7

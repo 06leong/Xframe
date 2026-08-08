@@ -313,13 +313,19 @@ export class WebGLImageViewerEngine {
       this.currentQuality = 'high'
     }
 
-    this.emitLoadingStateChange(false, LoadingState.COMPLETE, this.currentQuality)
+    this.emitLoadingStateChange(
+      false,
+      LoadingState.COMPLETE,
+      this.currentQuality,
+    )
     this.render()
 
     return true
   }
 
-  private async decodeImageOnMainThread(src: string): Promise<HTMLImageElement> {
+  private async decodeImageOnMainThread(
+    src: string,
+  ): Promise<HTMLImageElement> {
     return await new Promise((resolve, reject) => {
       const image = new Image()
       image.crossOrigin = 'anonymous'
@@ -367,7 +373,9 @@ export class WebGLImageViewerEngine {
     const normalizedError =
       error instanceof Error
         ? error
-        : new Error(typeof error === 'string' ? error : 'Unknown image load error')
+        : new Error(
+            typeof error === 'string' ? error : 'Unknown image load error',
+          )
 
     this.emitLoadingStateChange(false, LoadingState.ERROR)
     reject?.(normalizedError)
@@ -491,10 +499,15 @@ export class WebGLImageViewerEngine {
             payload: { src: absolute.toString() },
           })
         } catch (error) {
-          console.warn('Worker postMessage failed, using main-thread fallback.', error)
+          console.warn(
+            'Worker postMessage failed, using main-thread fallback.',
+            error,
+          )
           void this.renderWithMainThreadFallback(error)
             .then(() => this.resolvePendingImageLoad())
-            .catch((fallbackError) => this.rejectPendingImageLoad(fallbackError))
+            .catch((fallbackError) =>
+              this.rejectPendingImageLoad(fallbackError),
+            )
         }
       } else {
         void this.renderWithMainThreadFallback(new Error('No worker available'))
@@ -1544,7 +1557,9 @@ export class WebGLImageViewerEngine {
           if (!recreated) {
             const texture = this.createTexture(this.image)
             if (!texture) {
-              throw new Error('Failed to recreate texture after context restore')
+              throw new Error(
+                'Failed to recreate texture after context restore',
+              )
             }
             usingTiles = false
           }

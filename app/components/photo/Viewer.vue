@@ -475,7 +475,8 @@ const handleReactionSelect = async (reactionId: string, iconName: string) => {
       toast.add({
         icon: 'tabler:alert-circle',
         title: $t('viewer.reaction.error.title'),
-        description: error instanceof Error ? error.message : $t('common.unknownError'),
+        description:
+          error instanceof Error ? error.message : $t('common.unknownError'),
         color: 'warning',
       })
     }

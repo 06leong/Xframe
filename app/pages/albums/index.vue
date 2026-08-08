@@ -161,7 +161,9 @@ const hoveredAlbum = ref<number | null>(null)
                     :lazy="false"
                     :src="photo.thumbnailUrl!"
                     :thumbhash="photo.thumbnailHash"
-                    :alt="photo.exif?.ImageDescription || $t('ui.photo.altFallback')"
+                    :alt="
+                      photo.exif?.ImageDescription || $t('ui.photo.altFallback')
+                    "
                     :style="{
                       aspectRatio: photo.aspectRatio || 1,
                     }"

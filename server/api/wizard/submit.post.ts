@@ -46,7 +46,11 @@ export default eventHandler(async (event) => {
         })
         .where(eq(tables.users.id, existingUser.id))
         .run()
-      adminUser = db.select().from(tables.users).where(eq(tables.users.id, existingUser.id)).get()
+      adminUser = db
+        .select()
+        .from(tables.users)
+        .where(eq(tables.users.id, existingUser.id))
+        .get()
     } else {
       throw createError({
         statusCode: 400,
@@ -64,7 +68,11 @@ export default eventHandler(async (event) => {
         createdAt: new Date(),
       })
       .run()
-    adminUser = db.select().from(tables.users).where(eq(tables.users.email, body.admin.email)).get()
+    adminUser = db
+      .select()
+      .from(tables.users)
+      .where(eq(tables.users.email, body.admin.email))
+      .get()
   }
 
   // 2. Handle Site Settings

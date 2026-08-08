@@ -16,10 +16,7 @@ export interface GeocodingProvider {
 type LocationNameLanguageMode = 'native' | 'configured'
 
 async function getLocationNameLanguageMode(): Promise<LocationNameLanguageMode> {
-  const mode = await settingsManager.get<string>(
-    'location',
-    'nameLanguageMode',
-  )
+  const mode = await settingsManager.get<string>('location', 'nameLanguageMode')
 
   return mode === 'configured' ? 'configured' : 'native'
 }

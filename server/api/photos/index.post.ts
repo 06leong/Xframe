@@ -65,7 +65,9 @@ export default eventHandler(async (event) => {
       ((await settingsManager.get<boolean>(
         'system',
         'upload.duplicateCheck.enabled',
-      )) ?? true) && !skipDuplicateCheck
+      )) ??
+        true) &&
+      !skipDuplicateCheck
     let existingPhoto = null
 
     if (duplicateCheckEnabled) {

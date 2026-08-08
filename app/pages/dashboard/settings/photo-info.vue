@@ -73,7 +73,9 @@ const resetSettings = () => {
 }
 
 const handleSubmit = async () => {
-  const data = Object.fromEntries(fields.value.map((f) => [f.key, state[f.key]]))
+  const data = Object.fromEntries(
+    fields.value.map((f) => [f.key, state[f.key]]),
+  )
   try {
     await submit(data)
   } catch {
@@ -90,8 +92,12 @@ const handleSubmit = async () => {
 
     <template #body>
       <div class="mx-auto w-full max-w-5xl space-y-6">
-        <section class="space-y-2 border-b border-neutral-200 pb-4 dark:border-neutral-800">
-          <h2 class="text-xl font-semibold text-neutral-900 dark:text-neutral-100">
+        <section
+          class="space-y-2 border-b border-neutral-200 pb-4 dark:border-neutral-800"
+        >
+          <h2
+            class="text-xl font-semibold text-neutral-900 dark:text-neutral-100"
+          >
             {{ $t('title.photoInfoSettings') }}
           </h2>
           <p class="text-sm text-neutral-600 dark:text-neutral-400">
@@ -122,8 +128,12 @@ const handleSubmit = async () => {
             :key="group.titleKey"
             class="rounded-md border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-950"
           >
-            <header class="border-b border-neutral-200 px-5 py-4 dark:border-neutral-800">
-              <h3 class="text-base font-semibold text-neutral-900 dark:text-neutral-100">
+            <header
+              class="border-b border-neutral-200 px-5 py-4 dark:border-neutral-800"
+            >
+              <h3
+                class="text-base font-semibold text-neutral-900 dark:text-neutral-100"
+              >
                 {{ $t(group.titleKey) }}
               </h3>
             </header>
@@ -140,7 +150,9 @@ const handleSubmit = async () => {
           </section>
         </UForm>
 
-        <footer class="sticky bottom-0 border border-neutral-200 bg-white/95 px-5 py-4 backdrop-blur dark:border-neutral-800 dark:bg-neutral-950/95">
+        <footer
+          class="sticky bottom-0 border border-neutral-200 bg-white/95 px-5 py-4 backdrop-blur dark:border-neutral-800 dark:bg-neutral-950/95"
+        >
           <div
             v-if="isDirty"
             class="mb-3 rounded-md border border-warning-200 bg-warning-50 px-3 py-2 text-sm text-warning-800 dark:border-warning-900/60 dark:bg-warning-950/30 dark:text-warning-200"

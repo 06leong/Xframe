@@ -194,11 +194,17 @@ export function useUpload(options: UseUploadOptions = {}) {
           // 状态码 0 通常表示网络连接失败、CORS 问题或服务器不可达
           errorMessage = t('upload.runtimeError.networkFailed')
         } else if (xhr.status >= 400 && xhr.status < 500) {
-          errorMessage = t('upload.runtimeError.clientError', { status: xhr.status })
+          errorMessage = t('upload.runtimeError.clientError', {
+            status: xhr.status,
+          })
         } else if (xhr.status >= 500) {
-          errorMessage = t('upload.runtimeError.serverError', { status: xhr.status })
+          errorMessage = t('upload.runtimeError.serverError', {
+            status: xhr.status,
+          })
         } else {
-          errorMessage = t('upload.runtimeError.networkError', { status: xhr.status })
+          errorMessage = t('upload.runtimeError.networkError', {
+            status: xhr.status,
+          })
         }
 
         // 检查是否可以重试
@@ -322,7 +328,9 @@ export function useUpload(options: UseUploadOptions = {}) {
                 errorMessage = t('upload.runtimeError.serviceUnavailable')
                 break
               default:
-                errorMessage = t('upload.runtimeError.httpError', { status: xhr.status })
+                errorMessage = t('upload.runtimeError.httpError', {
+                  status: xhr.status,
+                })
             }
 
             // 尝试获取服务器返回的详细错误信息
@@ -387,7 +395,8 @@ export function useUpload(options: UseUploadOptions = {}) {
 
   // 格式化时间
   const formatTime = (seconds: number): string => {
-    if (!isFinite(seconds) || seconds < 0) return t('upload.progress.calculating')
+    if (!isFinite(seconds) || seconds < 0)
+      return t('upload.progress.calculating')
 
     const hours = Math.floor(seconds / 3600)
     const minutes = Math.floor((seconds % 3600) / 60)

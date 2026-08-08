@@ -54,7 +54,8 @@ const timelineRange = computed(() => {
   }
 
   const first = datedPhotosWithLocation.value[0]!
-  const last = datedPhotosWithLocation.value[datedPhotosWithLocation.value.length - 1]!
+  const last =
+    datedPhotosWithLocation.value[datedPhotosWithLocation.value.length - 1]!
   return {
     min: first.timestamp,
     max: last.timestamp,
@@ -237,32 +238,35 @@ const analysisMode = ref<'none' | 'focalLength' | 'shutterSpeed' | 'altitude'>(
 )
 const parameterAnnotationOpen = ref(false)
 
-const analysisModeOptions = computed(() => [
-  {
-    value: 'none',
-    label: $t('globe.analysis.mode.none.label'),
-    icon: 'tabler:circle-off',
-    description: $t('globe.analysis.mode.none.description'),
-  },
-  {
-    value: 'focalLength',
-    label: $t('globe.analysis.mode.focalLength.label'),
-    icon: 'tabler:zoom-scan',
-    description: $t('globe.analysis.mode.focalLength.description'),
-  },
-  {
-    value: 'shutterSpeed',
-    label: $t('globe.analysis.mode.shutterSpeed.label'),
-    icon: 'tabler:clock-hour-4',
-    description: $t('globe.analysis.mode.shutterSpeed.description'),
-  },
-  {
-    value: 'altitude',
-    label: $t('globe.analysis.mode.altitude.label'),
-    icon: 'tabler:mountain',
-    description: $t('globe.analysis.mode.altitude.description'),
-  },
-] as const)
+const analysisModeOptions = computed(
+  () =>
+    [
+      {
+        value: 'none',
+        label: $t('globe.analysis.mode.none.label'),
+        icon: 'tabler:circle-off',
+        description: $t('globe.analysis.mode.none.description'),
+      },
+      {
+        value: 'focalLength',
+        label: $t('globe.analysis.mode.focalLength.label'),
+        icon: 'tabler:zoom-scan',
+        description: $t('globe.analysis.mode.focalLength.description'),
+      },
+      {
+        value: 'shutterSpeed',
+        label: $t('globe.analysis.mode.shutterSpeed.label'),
+        icon: 'tabler:clock-hour-4',
+        description: $t('globe.analysis.mode.shutterSpeed.description'),
+      },
+      {
+        value: 'altitude',
+        label: $t('globe.analysis.mode.altitude.label'),
+        icon: 'tabler:mountain',
+        description: $t('globe.analysis.mode.altitude.description'),
+      },
+    ] as const,
+)
 
 const analysisLegend = computed(() => {
   if (analysisMode.value === 'focalLength') {
@@ -377,7 +381,9 @@ watch(filteredPhotosWithLocation, (currentPhotos) => {
     return
   }
 
-  const exists = currentPhotos.some((photo) => photo.id === currentClusterPointId.value)
+  const exists = currentPhotos.some(
+    (photo) => photo.id === currentClusterPointId.value,
+  )
   if (!exists) {
     currentClusterPointId.value = null
   }
@@ -711,7 +717,9 @@ onBeforeUnmount(() => {
           >
             <GlassButton
               size="sm"
-              :icon="isTimelinePlaying ? 'tabler:player-pause' : 'tabler:player-play'"
+              :icon="
+                isTimelinePlaying ? 'tabler:player-pause' : 'tabler:player-play'
+              "
               :class="
                 !hasTimelineData || !isTimelineEnabled
                   ? 'opacity-40 pointer-events-none'
@@ -724,7 +732,9 @@ onBeforeUnmount(() => {
             <div class="flex items-center justify-between gap-2 text-[11px]">
               <span class="font-medium">{{ $t('globe.timeline.title') }}</span>
               <span class="text-neutral-600 dark:text-white/60">
-                {{ filteredPhotosWithLocation.length }}/{{ photosWithLocation.length }}
+                {{ filteredPhotosWithLocation.length }}/{{
+                  photosWithLocation.length
+                }}
               </span>
             </div>
             <div

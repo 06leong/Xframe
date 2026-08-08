@@ -41,11 +41,17 @@ const parseExifNumber = (value: unknown): number | null => {
     return null
   }
 
-  const fractionMatch = trimmed.match(/^(-?\d+(?:\.\d+)?)\s*\/\s*(-?\d+(?:\.\d+)?)$/)
+  const fractionMatch = trimmed.match(
+    /^(-?\d+(?:\.\d+)?)\s*\/\s*(-?\d+(?:\.\d+)?)$/,
+  )
   if (fractionMatch) {
     const numerator = Number(fractionMatch[1])
     const denominator = Number(fractionMatch[2])
-    if (!Number.isFinite(numerator) || !Number.isFinite(denominator) || denominator === 0) {
+    if (
+      !Number.isFinite(numerator) ||
+      !Number.isFinite(denominator) ||
+      denominator === 0
+    ) {
       return null
     }
     return numerator / denominator
@@ -62,7 +68,8 @@ const parseExifNumber = (value: unknown): number | null => {
 
 const focalLengthValue = computed(() => {
   return parseExifNumber(
-    marker.value.exif?.FocalLengthIn35mmFormat ?? marker.value.exif?.FocalLength,
+    marker.value.exif?.FocalLengthIn35mmFormat ??
+      marker.value.exif?.FocalLength,
   )
 })
 
@@ -76,7 +83,8 @@ const altitudeValue = computed(() => {
     return null
   }
 
-  const isBelowSeaLevel = marker.value.exif?.GPSAltitudeRef === 'Below Sea Level'
+  const isBelowSeaLevel =
+    marker.value.exif?.GPSAltitudeRef === 'Below Sea Level'
   return isBelowSeaLevel ? -Math.abs(altitude) : altitude
 })
 
@@ -302,14 +310,18 @@ const onClick = () => {
             <div class="absolute inset-0 overflow-hidden rounded-full">
               <ThumbImage
                 :src="marker.thumbnailUrl!"
-                :alt="marker.title || $t('map.photo.altFallback', { id: marker.id })"
+                :alt="
+                  marker.title || $t('map.photo.altFallback', { id: marker.id })
+                "
                 :thumbhash="marker.thumbnailHash"
                 :threshold="0.1"
                 root-margin="100px"
                 class="h-full w-full object-cover opacity-50"
               />
               <div
-                :class="twMerge('absolute inset-0', analysisVisual.overlayClass)"
+                :class="
+                  twMerge('absolute inset-0', analysisVisual.overlayClass)
+                "
               />
             </div>
 
@@ -387,7 +399,10 @@ const onClick = () => {
                 <div class="relative h-36 overflow-hidden">
                   <ThumbImage
                     :src="marker.thumbnailUrl!"
-                    :alt="marker.title || $t('map.photo.altFallback', { id: marker.id })"
+                    :alt="
+                      marker.title ||
+                      $t('map.photo.altFallback', { id: marker.id })
+                    "
                     :thumbhash="marker.thumbnailHash"
                     :threshold="0.1"
                     root-margin="200px"
@@ -403,7 +418,10 @@ const onClick = () => {
                     class="flex items-center gap-2 text-neutral-900 dark:text-white group/link"
                   >
                     <h3 class="flex-1 text-lg font-semibold truncate">
-                      {{ marker.title || $t('map.photo.altFallback', { id: marker.id }) }}
+                      {{
+                        marker.title ||
+                        $t('map.photo.altFallback', { id: marker.id })
+                      }}
                     </h3>
                     <Icon
                       name="tabler:external-link"
