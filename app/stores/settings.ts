@@ -1,5 +1,3 @@
-import { defineStore } from 'pinia'
-
 type SettingValue = string | number | boolean | null | Record<string, any>
 
 interface SettingsState {

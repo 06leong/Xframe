@@ -27,7 +27,7 @@ export const APP_SETTINGS_UI: Record<string, FieldUIConfig> = {
     placeholder: 'Your name',
   },
   avatarUrl: {
-    type: 'url',
+    type: 'avatar',
     placeholder: 'https://example.com/avatar.jpg',
     help: 'settings.app.avatarUrl.help',
   },
@@ -173,6 +173,12 @@ export const ANALYTICS_SETTINGS_UI: Record<string, FieldUIConfig> = {
 }
 
 export const SYSTEM_SETTINGS_UI: Record<string, FieldUIConfig> = {
+  'queue.workerCount': {
+    type: 'number',
+    min: 1,
+    max: 8,
+    help: 'settings.system.queue.workerCount.help',
+  },
   'upload.maxFileSize': {
     type: 'number',
     help: 'settings.app.upload.maxFileSize.help',
@@ -380,7 +386,7 @@ export const STORAGE_SETTINGS_UI: Record<string, FieldUIConfig> = {
   },
   // S3
   's3.endpoint': {
-    type: 'input',
+    type: 'url',
     required: true,
     placeholder: 'https://s3.amazonaws.com',
     help: 'settings.storage.s3.endpoint.description',
@@ -433,7 +439,7 @@ export const STORAGE_SETTINGS_UI: Record<string, FieldUIConfig> = {
   },
   // OpenList
   'openlist.baseUrl': {
-    type: 'input',
+    type: 'url',
     required: true,
     placeholder: 'https://alist.example.com',
     help: 'settings.storage.openlist.baseUrl.description',

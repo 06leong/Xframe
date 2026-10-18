@@ -10,3 +10,12 @@ export const getPhotoPublicPath = (photo?: PhotoPublicPathSource | null) => {
   const slug = getPhotoPublicSlug(photo)
   return slug ? `/${encodeURIComponent(slug)}` : '/'
 }
+
+export const matchesPhotoPublicSlug = (
+  photo: PhotoPublicPathSource | null | undefined,
+  identifier: string | null | undefined,
+) =>
+  Boolean(
+    identifier &&
+    (getPhotoPublicSlug(photo) === identifier || photo?.id === identifier),
+  )

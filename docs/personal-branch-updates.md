@@ -10,6 +10,17 @@ This document tracks the changes maintained on the `personal` branch of this Chr
 
 ## Version History
 
+### personal-1.0.1.1
+
+- Merged upstream ChronoFrame v1.0.1, including the 1.0.0 stable features and 1.0.1 analytics, queue deletion, and dark-mode log fixes.
+- Preserved editable About and its Markdown safeguards, the typewriter slogan, MapTiler search, native location names, capture-time EXIF offsets, photo information controls, three UI languages, and personal image publishing.
+- Kept global photo URLs as stable public slugs and legacy photo IDs readable. Album browsing and sharing use /albums/:id?photo=<publicSlug> to retain the album scope after refresh and sharing.
+- Adapted photo Open Graph metadata and previews to public slugs, legacy IDs, and album query links. Share metadata only uses anonymous-visible photographs, even when an administrator is signed in.
+- Preserved published personal migrations through 0012 and appended upstream album positions, album passwords, indexed media access keys, and queue availability as migrations 0013–0016. New snapshots retain the public slug column and unique index.
+- Added regression tests for fresh databases, upgrades from the 13-migration personal release, unchanged history and slugs, album order, access-index trigger updates, and legacy photo identifiers.
+- Retained markdown-it and its type definitions. Settings and debug stores now use Nuxt auto-imports to share the same Pinia instance in production SSR.
+- Application version: 1.0.1. Personal image version: personal-1.0.1.1.
+
 ### v0.41
 
 - Fixed a production compatibility issue where photo list APIs could return no photos if the deployed SQLite database had not received the new `public_slug` column before Drizzle selected photo rows.

@@ -2,6 +2,10 @@
 import dayjsLocale_zhCN from 'dayjs/locale/zh-cn'
 import dayjsLocale_zhTW from 'dayjs/locale/zh-tw'
 
+const DebugPanel = import.meta.dev
+  ? defineAsyncComponent(() => import('~/components/debug/Panel.vue'))
+  : null
+
 const router = useRouter()
 const dayjs = useDayjs()
 const colorMode = useColorMode()
@@ -28,6 +32,7 @@ const appTitle = useSettingRef('app:title')
 colorMode.preference = useSettingRef('app:appearance.theme').value as string
 
 useHead({
+  htmlAttrs: { lang: localeRef },
   titleTemplate: (title) =>
     `${title ? title + ' | ' : ''}${appTitle.value || 'ChronoFrame'}`,
 })
@@ -49,6 +54,7 @@ const { data, refresh, status } = await useFetch(() => apiEndpoint.value, {
 })
 
 const photos = computed(() => (data.value as Photo[]) || [])
+await useInstanceOpenGraph(photos)
 
 const { switchToIndex, closeViewer, clearReturnRoute } = useViewerState()
 const {
@@ -65,7 +71,19 @@ const viewerPhotos = computed(() => scopedPhotos.value ?? photos.value)
 
 const handleIndexChange = (newIndex: number) => {
   switchToIndex(newIndex)
-  router.replace(getPhotoPublicPath(viewerPhotos.value[newIndex]))
+  const photoId = getPhotoPublicSlug(viewerPhotos.value[newIndex])
+  if (!photoId) return
+  if (
+    returnRoute.value?.startsWith('/albums/') &&
+    route.path === returnRoute.value
+  ) {
+    router.replace({
+      path: route.path,
+      query: { ...route.query, photo: photoId },
+    })
+  } else {
+    router.replace(getPhotoPublicPath(viewerPhotos.value[newIndex]))
+  }
 }
 
 const handleClose = () => {
@@ -123,6 +141,11 @@ provide(
         <NuxtPage />
       </NuxtLayout>
       <ClientOnly>
+        <AdminTours />
+        <component
+          :is="DebugPanel"
+          v-if="DebugPanel"
+        />
         <PhotoViewer
           :photos="viewerPhotos"
           :current-index="currentPhotoIndex"

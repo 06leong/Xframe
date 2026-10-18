@@ -1,6 +1,9 @@
 import { z } from 'zod'
 import { settingsManager } from '~~/server/services/settings/settingsManager'
-import { DEFAULT_SETTINGS } from '~~/server/services/settings/contants'
+import {
+  DEFAULT_SETTINGS,
+  getHiddenSettingKeys,
+} from '~~/server/services/settings/contants'
 import { getSettingUIConfig } from '~~/server/services/settings/ui-config'
 import type { SettingsFieldsResponse } from '~~/shared/types/settings'
 
@@ -38,8 +41,12 @@ export default eventHandler(async (event) => {
         (s) => s.key,
       ),
     )
+    const hiddenKeys = getHiddenSettingKeys(query.namespace)
     const namespaceSettings = schema.filter(
-      (s) => s.namespace === query.namespace && allowedKeys.has(s.key),
+      (s) =>
+        s.namespace === query.namespace &&
+        allowedKeys.has(s.key) &&
+        !hiddenKeys.has(s.key),
     )
 
     if (namespaceSettings.length === 0) {

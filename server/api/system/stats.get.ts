@@ -1,10 +1,13 @@
+import { settingsManager } from '~~/server/services/settings/settingsManager'
 import { sql, gte } from 'drizzle-orm'
 import * as si from 'systeminformation'
 import { readFileSync } from 'node:fs'
 
 async function getQueueStats() {
   const workerPool = globalThis.__workerPool
-  return workerPool ? workerPool.getPoolStats() : null
+  return workerPool
+    ? { ...workerPool.getPoolStats(), isActive: workerPool.isActive() }
+    : null
 }
 
 async function checkIfDocker(): Promise<boolean> {
@@ -120,6 +123,17 @@ function mapSystemInfo(distribution: string): string {
 export default eventHandler(async (event) => {
   await requireUserSession(event)
 
+  const queue = await useDB()
+    .select({
+      pending: sql<number>`COALESCE(SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END), 0)`,
+      failed: sql<number>`COALESCE(SUM(CASE WHEN status = 'failed' THEN 1 ELSE 0 END), 0)`,
+      oldestPendingAt: sql<
+        number | null
+      >`MIN(CASE WHEN status = 'pending' THEN created_at END)`,
+    })
+    .from(tables.pipelineQueue)
+    .get()
+
   // 获取基础统计
   const totalPhotos = await useDB()
     .select({ count: sql<number>`count(*)` })
@@ -217,6 +231,8 @@ export default eventHandler(async (event) => {
     }
   }
 
+  const activeStorage = await settingsManager.storage.getActiveProvider()
+
   return {
     uptime: process.uptime() || 0,
     runningOn: systemInfo,
@@ -228,7 +244,18 @@ export default eventHandler(async (event) => {
       thisMonth: monthPhotos?.count || 0,
     },
     workerPool: (await getQueueStats()) || null,
+    queue: {
+      pending: queue?.pending || 0,
+      failed: queue?.failed || 0,
+      oldestWaitSeconds:
+        queue?.oldestPendingAt != null
+          ? Math.max(0, Math.floor(Date.now() / 1000) - queue.oldestPendingAt)
+          : 0,
+    },
     storage: {
+      activeProvider: activeStorage
+        ? { provider: activeStorage.provider, name: activeStorage.name }
+        : null,
       totalSize: storageStats?.totalSize || 0,
       averageSize: storageStats?.avgSize || 0,
       maxSize: storageStats?.maxSize || 0,

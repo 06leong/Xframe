@@ -14,17 +14,6 @@ const { photos } = usePhotos()
 
 const slug = computed(() => (route.params.slug as string[]) || [])
 const photoSlug = computed(() => slug.value[0] || null)
-const currentPhoto = computed(() =>
-  photos.value.find(
-    (photo) =>
-      getPhotoPublicSlug(photo) === photoSlug.value ||
-      photo.id === photoSlug.value,
-  ),
-)
-
-defineOgImage('Photo', {
-  photo: currentPhoto.value || undefined,
-})
 
 const { clearAllFilters, toggleFilter } = usePhotoFilters()
 

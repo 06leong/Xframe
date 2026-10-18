@@ -1,4 +1,6 @@
 <script lang="ts" setup>
+import { settingsFieldCommitKey } from '~/composables/useSettingsForm'
+
 definePageMeta({
   layout: 'dashboard',
 })
@@ -10,7 +12,9 @@ useHead({
 const colorMode = useColorMode()
 const runtimeConfig = useRuntimeConfig()
 
-const { fields, state, submit, loading } = useSettingsForm('app')
+const { fields, state, submit, loading, commitField } = useSettingsForm('app')
+
+provide(settingsFieldCommitKey, commitField)
 
 const appFields = computed(() =>
   fields.value.filter(

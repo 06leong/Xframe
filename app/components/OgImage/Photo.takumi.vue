@@ -7,21 +7,32 @@ initIconBundle(addIcon)
 
 interface PhotoProps {
   photo?: Photo
+  appTitle?: string
 }
 
-const { photo } = defineProps<PhotoProps>()
+const { photo, appTitle: appTitleProp } = defineProps<PhotoProps>()
 
 const { $i18n } = useNuxtApp()
-const config = useRuntimeConfig()
+
+const resolvedAppTitle = computed(() => {
+  if (typeof appTitleProp === 'string' && appTitleProp.length > 0) {
+    return appTitleProp
+  }
+  const fromSettings = getSetting('app:title')
+  if (typeof fromSettings === 'string' && fromSettings.length > 0) {
+    return fromSettings
+  }
+  return 'ChronoFrame'
+})
 
 const headline = computed(() =>
   photo ? $i18n.t('title.fallback.photo') : 'ChronoFrame',
 )
 const title = computed(() =>
-  (photo?.title || config.public.app.title).slice(0, 60),
+  (photo?.title || resolvedAppTitle.value).slice(0, 60),
 )
 const description = computed(() =>
-  (photo ? photo.description || '' : config.public.app.title).slice(0, 200),
+  (photo ? photo.description || '' : resolvedAppTitle.value).slice(0, 200),
 )
 const thumbnailUrl = computed(() =>
   photo?.thumbnailKey && photo.thumbnailUrl
@@ -46,14 +57,14 @@ const thumbnailUrl = computed(() =>
       class="og-photo__gradient absolute inset-y-0 right-0 w-[60%]"
     />
     <div
-      class="h-full flex flex-col justify-between pl-24 py-16 bg-neutral-950/10"
+      class="relative h-full flex flex-col justify-between pl-24 py-16 bg-neutral-950/10"
     >
       <div class="flex flex-col">
         <p
           v-if="headline"
           class="m-0 mb-2 uppercase text-4xl font-semibold text-rose-500"
         >
-          {{ headline }} · {{ config.public.app.title }}
+          {{ headline }} · {{ resolvedAppTitle }}
         </p>
         <h1
           v-if="title"

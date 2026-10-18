@@ -1,6 +1,14 @@
 <script lang="ts" setup>
 import type { FormSubmitEvent, TableColumn } from '@nuxt/ui'
-import type { Photo, PipelineQueueItem } from '~~/server/utils/db'
+import type { Photo } from '~~/server/utils/db'
+import type { UploadingFile } from '~~/shared/types/uploading-file'
+import {
+  UploadQueueStatus,
+  UploadTransportStatus,
+  isAbortableUploadStatus,
+  isClearableUploadStatus,
+  isInFlightTransportStatus,
+} from '~~/shared/utils/upload-status'
 import { h, resolveComponent } from 'vue'
 import { Icon, UBadge } from '#components'
 import ThumbImage from '~/components/ui/ThumbImage.vue'
@@ -48,6 +56,7 @@ const { formatExifDateTime } = useExifDateTime()
 
 const { status, refresh } = usePhotos()
 const { filteredPhotos, selectedCounts, hasActiveFilters } = usePhotoFilters()
+const { currentSortIcon, currentSortOption } = usePhotoSort()
 
 const totalSelectedFilters = computed(() => {
   return Object.values(selectedCounts.value).reduce(
@@ -102,38 +111,6 @@ const fetchReactions = async (photoIds: string[]) => {
   } finally {
     reactionsLoading.value = false
   }
-}
-
-interface UploadingFile {
-  file: File
-  fileName: string
-  fileId: string
-  status:
-    | 'waiting'
-    | 'preparing'
-    | 'uploading'
-    | 'processing'
-    | 'completed'
-    | 'error'
-    | 'skipped'
-    | 'blocked'
-  stage?: PipelineQueueItem['statusStage'] | null
-  progress?: number
-  error?: string
-  warning?: string
-  taskId?: number
-  signedUrlResponse?: { signedUrl: string; fileKey: string; expiresIn: number }
-  uploadProgress?: {
-    loaded: number
-    total: number
-    percentage: number
-    speed?: number
-    timeRemaining?: number
-    speedText?: string
-    timeRemainingText?: string
-  }
-  canAbort?: boolean
-  abortUpload?: () => void
 }
 
 const uploadingFiles = ref<Map<string, UploadingFile>>(new Map())
@@ -272,7 +249,7 @@ const uploadImage = async (
   const fileId = existingFileId || `${Date.now()}-${fileName}`
 
   const uploadManager = useUpload({
-    timeout: 10 * 60 * 1000, // 10分钟超时
+    timeout: 60 * 1000, // 单个分片一分钟超时，避免请求长时间卡住
   })
 
   // 获取或创建 uploadingFile
@@ -282,14 +259,14 @@ const uploadImage = async (
       file,
       fileName,
       fileId,
-      status: 'preparing',
+      status: UploadQueueStatus.Preparing,
       canAbort: false,
       abortUpload: () => uploadManager.abortUpload(),
     }
     uploadingFiles.value.set(fileId, uploadingFile)
   } else {
     // 更新现有条目的状态和回调
-    uploadingFile.status = 'preparing'
+    uploadingFile.status = UploadQueueStatus.Preparing
     uploadingFile.canAbort = false
     uploadingFile.warning = undefined
     uploadingFile.abortUpload = () => uploadManager.abortUpload()
@@ -298,12 +275,14 @@ const uploadImage = async (
 
   try {
     // 第一步：获取预签名 URL
-    uploadingFile.status = 'preparing'
+    uploadingFile.status = UploadQueueStatus.Preparing
     const signedUrlResponse = await $fetch('/api/photos', {
       method: 'POST',
       body: {
         fileName: file.name,
         contentType: file.type,
+        fileSize: file.size,
+        chunked: true,
       },
     })
 
@@ -311,7 +290,7 @@ const uploadImage = async (
 
     // 检查是否为跳过模式（重复文件）
     if (signedUrlResponse.skipped) {
-      uploadingFile.status = 'skipped'
+      uploadingFile.status = UploadQueueStatus.Skipped
       uploadingFile.progress = 100
       uploadingFile.canAbort = false
       uploadingFile.error =
@@ -339,106 +318,113 @@ const uploadImage = async (
       uploadingFiles.value = new Map(uploadingFiles.value)
     }
 
-    uploadingFile.status = 'uploading'
+    uploadingFile.status = UploadQueueStatus.Uploading
     uploadingFile.canAbort = true
     uploadingFile.progress = 0
     uploadingFiles.value = new Map(uploadingFiles.value)
 
     // 第二步：使用 composable 上传文件到存储
-    await uploadManager.uploadFile(file, signedUrlResponse.signedUrl, {
-      onProgress: (progress: UploadProgress) => {
-        uploadingFile.progress = progress.percentage
-        uploadingFile.uploadProgress = {
-          loaded: progress.loaded,
-          total: progress.total,
-          percentage: progress.percentage,
-          speed: progress.speed,
-          timeRemaining: progress.timeRemaining,
-          speedText: progress.speed ? `${formatBytes(progress.speed)}/s` : '',
-          timeRemainingText: progress.timeRemaining
-            ? dayjs.duration(progress.timeRemaining, 'seconds').humanize()
-            : '',
-        }
-        uploadingFiles.value = new Map(uploadingFiles.value)
-      },
-      onStatusChange: (status: string) => {
-        uploadingFile.canAbort = status === 'uploading'
-        uploadingFiles.value = new Map(uploadingFiles.value)
-      },
-      onSuccess: async (_xhr: XMLHttpRequest) => {
-        // 第三步：上传完成，提交到队列任务
-        uploadingFile.status = 'processing'
-        uploadingFile.progress = 100
-        uploadingFile.canAbort = false
-        uploadingFile.stage = null // 重置 stage，准备显示任务状态
-        uploadingFiles.value = new Map(uploadingFiles.value)
+    await uploadManager.uploadFile(
+      file,
+      signedUrlResponse.upload || signedUrlResponse.signedUrl,
+      {
+        onProgress: (progress: UploadProgress) => {
+          uploadingFile.progress = progress.percentage
+          uploadingFile.uploadProgress = {
+            loaded: progress.loaded,
+            total: progress.total,
+            percentage: progress.percentage,
+            speed: progress.speed,
+            timeRemaining: progress.timeRemaining,
+            speedText: progress.speed ? `${formatBytes(progress.speed)}/s` : '',
+            timeRemainingText:
+              progress.timeRemaining !== undefined
+                ? uploadManager.formatTime(progress.timeRemaining)
+                : '',
+          }
+          uploadingFiles.value = new Map(uploadingFiles.value)
+        },
+        onStatusChange: (status: UploadTransportStatus) => {
+          uploadingFile.canAbort = isInFlightTransportStatus(status)
+          if (status === UploadTransportStatus.Finalizing)
+            uploadingFile.status = UploadQueueStatus.Finalizing
+          uploadingFiles.value = new Map(uploadingFiles.value)
+        },
+        onSuccess: async (_xhr: XMLHttpRequest) => {
+          // 第三步：上传完成，提交到队列任务
+          uploadingFile.status = UploadQueueStatus.Processing
+          uploadingFile.progress = 100
+          uploadingFile.canAbort = false
+          uploadingFile.stage = null // 重置 stage，准备显示任务状态
+          uploadingFiles.value = new Map(uploadingFiles.value)
 
-        try {
-          // 检查是否为MOV视频文件（通过MIME类型或文件扩展名）
-          const isMovFile =
-            file.type === 'video/quicktime' ||
-            file.type === 'video/mp4' ||
-            file.name.toLowerCase().endsWith('.mov')
+          try {
+            // 检查是否为MOV视频文件（通过MIME类型或文件扩展名）
+            const isMovFile =
+              file.type === 'video/quicktime' ||
+              file.type === 'video/mp4' ||
+              file.name.toLowerCase().endsWith('.mov')
 
-          const resp = await $fetch('/api/queue/add-task', {
-            method: 'POST',
-            body: {
-              payload: {
-                type: isMovFile ? 'live-photo-video' : 'photo',
-                storageKey: signedUrlResponse.fileKey,
-                ...(isMovFile
-                  ? {}
-                  : {
-                      eraseLocation:
-                        eraseLocationOnUpload ??
-                        systemUploadEraseLocationDefault.value,
-                    }),
+            const resp = await $fetch('/api/queue/add-task', {
+              method: 'POST',
+              body: {
+                payload: {
+                  type: isMovFile ? 'live-photo-video' : 'photo',
+                  storageKey: signedUrlResponse.fileKey,
+                  ...(isMovFile
+                    ? {}
+                    : {
+                        eraseLocation:
+                          eraseLocationOnUpload ??
+                          systemUploadEraseLocationDefault.value,
+                      }),
+                },
+                priority: isMovFile ? 0 : 1, // Live Photo 视频优先级更低，确保图片优先处理
+                maxAttempts: 3,
               },
-              priority: isMovFile ? 0 : 1, // Live Photo 视频优先级更低，确保图片优先处理
-              maxAttempts: 3,
-            },
-          })
+            })
 
-          if (resp.success) {
-            uploadingFile.taskId = resp.taskId
-            uploadingFile.status = 'processing'
-            uploadingFiles.value = new Map(uploadingFiles.value)
+            if (resp.success) {
+              uploadingFile.taskId = resp.taskId
+              uploadingFile.status = UploadQueueStatus.Processing
+              uploadingFiles.value = new Map(uploadingFiles.value)
 
-            // 开始任务状态检查
-            startTaskStatusCheck(resp.taskId, fileId)
-          } else {
-            uploadingFile.status = 'error'
-            uploadingFile.error = $t(
-              'dashboard.photos.messages.taskSubmitFailed',
-            )
+              // 开始任务状态检查
+              startTaskStatusCheck(resp.taskId, fileId)
+            } else {
+              uploadingFile.status = UploadQueueStatus.Error
+              uploadingFile.error = $t(
+                'dashboard.photos.messages.taskSubmitFailed',
+              )
+              uploadingFiles.value = new Map(uploadingFiles.value)
+            }
+          } catch (processError: any) {
+            uploadingFile.status = UploadQueueStatus.Error
+            uploadingFile.error = `${$t('dashboard.photos.messages.taskSubmitFailed')}: ${processError.message}`
+            uploadingFile.canAbort = false
             uploadingFiles.value = new Map(uploadingFiles.value)
           }
-        } catch (processError: any) {
-          uploadingFile.status = 'error'
-          uploadingFile.error = `${$t('dashboard.photos.messages.taskSubmitFailed')}: ${processError.message}`
+        },
+        onError: (error: string) => {
+          const isConflict = /\b409\b|Conflict/i.test(error)
+
+          if (isConflict) {
+            uploadingFile.status = UploadQueueStatus.Blocked
+            uploadingFile.error = $t('upload.duplicate.block.message', {
+              fileName,
+            })
+          } else {
+            uploadingFile.status = UploadQueueStatus.Error
+            uploadingFile.error = error
+          }
+
           uploadingFile.canAbort = false
           uploadingFiles.value = new Map(uploadingFiles.value)
-        }
+        },
       },
-      onError: (error: string) => {
-        const isConflict = /\b409\b|Conflict/i.test(error)
-
-        if (isConflict) {
-          uploadingFile.status = 'blocked'
-          uploadingFile.error = $t('upload.duplicate.block.message', {
-            fileName,
-          })
-        } else {
-          uploadingFile.status = 'error'
-          uploadingFile.error = error
-        }
-
-        uploadingFile.canAbort = false
-        uploadingFiles.value = new Map(uploadingFiles.value)
-      },
-    })
+    )
   } catch (error: any) {
-    uploadingFile.status = 'error'
+    uploadingFile.status = UploadQueueStatus.Error
     uploadingFile.canAbort = false
 
     // 处理重复文件阻止模式的错误
@@ -449,7 +435,7 @@ const uploadImage = async (
       (error.data?.duplicate || /Conflict|409/i.test(error.message || ''))
 
     if (isDuplicateConflict) {
-      uploadingFile.status = 'blocked'
+      uploadingFile.status = UploadQueueStatus.Blocked
       uploadingFile.error =
         error.data.message || $t('upload.duplicate.block.message', { fileName })
 
@@ -552,23 +538,18 @@ watch(isEditModalOpen, (open) => {
 // 表格多选状态
 const rowSelection = ref({})
 const table: any = useTemplateRef('table')
+const getPhotoRowId = (photo: Photo) => photo.id
+const rowRangeSelection = useShiftRangeSelection()
 
-// 列可见性状态
-const columnVisibility = ref({
-  thumbnailUrl: true,
-  id: true,
-  actions: true,
-  title: true,
-  tags: true,
-  rating: true,
-  isLivePhoto: true,
-  location: true,
-  dateTaken: true,
-  lastModified: true,
-  fileSize: true,
-  colorSpace: true,
-  reactions: true,
-})
+watch(
+  () => Object.keys(rowSelection.value).length === 0,
+  (isEmpty) => {
+    if (isEmpty) rowRangeSelection.resetAnchor()
+  },
+)
+
+// 列可见性状态，选择结果保存在 localStorage，刷新后恢复
+const columnVisibility = useDashboardPhotoColumnVisibility()
 
 const selectedRowsCount = computed((): number => {
   return table.value?.tableApi?.getFilteredSelectedRowModel().rows.length || 0
@@ -640,7 +621,7 @@ const startTaskStatusCheck = (taskId: number, fileId: string) => {
 
       if (response.status === 'completed') {
         // 任务完成
-        uploadingFile.status = 'completed'
+        uploadingFile.status = UploadQueueStatus.Completed
         uploadingFile.stage = null
         uploadingFiles.value = new Map(uploadingFiles.value)
 
@@ -660,7 +641,7 @@ const startTaskStatusCheck = (taskId: number, fileId: string) => {
         // }, 2000)
       } else if (response.status === 'failed') {
         // 任务失败
-        uploadingFile.status = 'error'
+        uploadingFile.status = UploadQueueStatus.Error
         uploadingFile.error = `${$t('dashboard.photos.messages.error')}: ${response.errorMessage || $t('dashboard.photos.table.cells.unknown')}`
         uploadingFile.stage = null
         uploadingFiles.value = new Map(uploadingFiles.value)
@@ -681,7 +662,7 @@ const startTaskStatusCheck = (taskId: number, fileId: string) => {
 
       const uploadingFile = uploadingFiles.value.get(fileId)
       if (uploadingFile) {
-        uploadingFile.status = 'error'
+        uploadingFile.status = UploadQueueStatus.Error
         uploadingFile.error = $t(
           'dashboard.photos.messages.taskStatusCheckFailed',
         )
@@ -716,10 +697,7 @@ const clearCompletedTasks = () => {
   const toRemove: string[] = []
 
   for (const [fileId, uploadingFile] of uploadingFiles.value) {
-    if (
-      uploadingFile.status === 'completed' ||
-      uploadingFile.status === 'error'
-    ) {
+    if (isClearableUploadStatus(uploadingFile.status)) {
       toRemove.push(fileId)
 
       // 清理可能存在的定时器
@@ -763,7 +741,10 @@ const clearAllUploads = () => {
     toRemove.push(fileId)
 
     // 如果是正在上传的任务，先中止
-    if (uploadingFile.status === 'uploading' && uploadingFile.abortUpload) {
+    if (
+      isAbortableUploadStatus(uploadingFile.status) &&
+      uploadingFile.abortUpload
+    ) {
       uploadingFile.abortUpload()
     }
 
@@ -803,13 +784,21 @@ const columns = computed<TableColumn<Photo>[]>(() => [
           table.toggleAllPageRowsSelected(!!value),
         'aria-label': $t('dashboard.photos.table.selectAllAria'),
       }),
-    cell: ({ row }) =>
-      h(UCheckbox, {
-        modelValue: row.getIsSelected(),
-        'onUpdate:modelValue': (value: boolean | 'indeterminate') =>
-          row.toggleSelected(!!value),
-        'aria-label': $t('dashboard.photos.table.selectRowAria'),
-      }),
+    cell: ({ row, table }) =>
+      h(
+        'div',
+        {
+          class: 'flex',
+          onClickCapture: rowRangeSelection.captureModifiers,
+          onMousedown: rowRangeSelection.preventShiftTextSelection,
+        },
+        h(UCheckbox, {
+          modelValue: row.getIsSelected(),
+          'onUpdate:modelValue': (value: boolean | 'indeterminate') =>
+            rowRangeSelection.toggleTableRow(table, row, !!value),
+          'aria-label': $t('dashboard.photos.table.selectRowAria'),
+        }),
+      ),
     enableHiding: false,
   },
   {
@@ -1115,7 +1104,8 @@ const validateFile = (
 }
 
 const handleUpload = async () => {
-  const fileList = selectedFiles.value
+  const fileList = [...selectedFiles.value]
+  const eraseLocation = uploadEraseLocationEnabled.value
 
   if (fileList.length === 0) {
     return
@@ -1187,20 +1177,28 @@ const handleUpload = async () => {
   }
 
   // 立即为所有有效文件创建队列条目，状态为 waiting
+  const nextUploadingFiles = new Map(uploadingFiles.value)
   for (const file of validFiles) {
     const fileId = fileIdMapping.get(file)!
     const uploadingFile: UploadingFile = {
       file,
       fileName: file.name,
       fileId,
-      status: 'waiting',
+      status: UploadQueueStatus.Waiting,
       canAbort: false,
     }
-    uploadingFiles.value.set(fileId, uploadingFile)
+    nextUploadingFiles.set(fileId, uploadingFile)
   }
 
   // 触发队列更新
-  uploadingFiles.value = new Map(uploadingFiles.value)
+  uploadingFiles.value = nextUploadingFiles
+
+  // 本批次已经交给队列，立即释放选择器并关闭抽屉。
+  selectedFiles.value = []
+  isUploadSlideoverOpen.value = false
+  await nextTick()
+  // 让浏览器先处理界面更新，再启动文件上传。
+  await new Promise<void>((resolve) => setTimeout(resolve, 0))
 
   // 动态并发上传，始终保持 CONCURRENT_LIMIT 个文件在上传
   const CONCURRENT_LIMIT = 3 // 限制同时上传的文件数量
@@ -1213,7 +1211,7 @@ const handleUpload = async () => {
   const startUpload = async (file: File): Promise<void> => {
     const fileId = fileIdMapping.get(file)!
     try {
-      await uploadImage(file, fileId, uploadEraseLocationEnabled.value)
+      await uploadImage(file, fileId, eraseLocation)
     } catch (error: any) {
       errors.push(`${file.name}: ${error.message || '上传失败'}`)
       console.error('上传错误:', error)
@@ -1249,10 +1247,6 @@ const handleUpload = async () => {
   if (errors.length > 0) {
     console.error('批量上传错误详情:', errors)
   }
-
-  // 清空选中的文件
-  selectedFiles.value = []
-  isUploadSlideoverOpen.value = false
 }
 
 const openMetadataEditor = (photo: Photo) => {
@@ -2070,6 +2064,7 @@ onUnmounted(() => {
               variant="soft"
               color="neutral"
               icon="tabler:list-check"
+              data-tour="photo-queue"
               @click="$router.push('/dashboard/queue')"
             >
               <span class="hidden sm:inline">{{
@@ -2078,6 +2073,7 @@ onUnmounted(() => {
             </UButton>
             <UButton
               icon="tabler:cloud-upload"
+              data-tour="photo-upload"
               @click="openUploadSlideover"
             >
               <span class="hidden sm:inline">{{
@@ -2303,8 +2299,28 @@ onUnmounted(() => {
                   </UCard>
                 </template>
               </UPopover>
+              <UPopover>
+                <UTooltip :text="$t('ui.action.sort.tooltip')">
+                  <UButton
+                    variant="soft"
+                    :color="
+                      currentSortOption?.key === 'dateTaken-desc'
+                        ? 'neutral'
+                        : 'info'
+                    "
+                    class="bg-transparent rounded-full cursor-pointer"
+                    :icon="currentSortIcon"
+                    size="sm"
+                  />
+                </UTooltip>
+
+                <template #content>
+                  <OverlaySortPanel />
+                </template>
+              </UPopover>
               <!-- 过滤器 -->
               <USelectMenu
+                data-tour="photo-filter"
                 v-model="photoFilter"
                 class="w-full sm:w-48"
                 :items="[
@@ -2402,6 +2418,7 @@ onUnmounted(() => {
               ref="table"
               v-model:row-selection="rowSelection"
               v-model:column-visibility="columnVisibility"
+              :get-row-id="getPhotoRowId"
               :column-pinning="{
                 right: ['actions'],
               }"
@@ -2467,75 +2484,89 @@ onUnmounted(() => {
             >
               <div
                 v-if="selectedRowsCount > 0"
-                class="fixed bottom-8 left-1/2 -translate-x-1/2 px-2 py-1.5 bg-white/90 dark:bg-neutral-900/90 backdrop-blur-xl shadow-xl rounded-full border border-neutral-200/80 dark:border-neutral-800/80 z-60 flex items-center gap-3 sm:gap-6 shadow-black/5 dark:shadow-black/20"
+                class="fixed bottom-8 left-1/2 -translate-x-1/2 z-60 w-max flex flex-col items-center gap-2"
               >
-                <div
-                  class="pl-4 pr-1 border-r border-neutral-200 dark:border-neutral-800 min-w-max"
+                <p
+                  class="hidden items-center gap-1.5 max-w-[calc(100vw-2rem)] px-3 py-1 rounded-full bg-white/80 dark:bg-neutral-900/80 backdrop-blur-xl border border-neutral-200/80 dark:border-neutral-800/80 text-xs text-neutral-500 dark:text-neutral-400 pointer-fine:flex"
                 >
-                  <p
-                    class="text-sm font-medium tracking-wide text-neutral-700 dark:text-neutral-200"
-                  >
-                    {{
-                      $t('dashboard.photos.selection.selected', {
-                        count: selectedRowsCount,
-                        total: totalRowsCount,
-                      })
-                    }}
-                  </p>
-                </div>
+                  <Icon
+                    name="tabler:info-circle"
+                    class="size-3.5 shrink-0"
+                  />
+                  {{ $t('ui.action.select.rangeTip') }}
+                </p>
 
-                <div class="flex items-center gap-1 sm:gap-1.5 pr-2">
-                  <UButton
-                    color="neutral"
-                    variant="ghost"
-                    size="sm"
-                    class="rounded-full text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:text-white dark:hover:bg-neutral-800"
-                    icon="tabler:refresh"
-                    @click="handleBatchReprocess"
+                <div
+                  class="px-2 py-1.5 bg-white/90 dark:bg-neutral-900/90 backdrop-blur-xl shadow-xl rounded-full border border-neutral-200/80 dark:border-neutral-800/80 flex items-center gap-3 sm:gap-6 shadow-black/5 dark:shadow-black/20"
+                >
+                  <div
+                    class="pl-4 pr-1 border-r border-neutral-200 dark:border-neutral-800 min-w-max"
                   >
-                    <span class="hidden sm:inline">{{
-                      $t('dashboard.photos.selection.batchReprocess')
-                    }}</span>
-                  </UButton>
+                    <p
+                      class="text-sm font-medium tracking-wide text-neutral-700 dark:text-neutral-200"
+                    >
+                      {{
+                        $t('dashboard.photos.selection.selected', {
+                          count: selectedRowsCount,
+                          total: totalRowsCount,
+                        })
+                      }}
+                    </p>
+                  </div>
 
-                  <UButton
-                    color="neutral"
-                    variant="ghost"
-                    size="sm"
-                    class="rounded-full text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:text-white dark:hover:bg-neutral-800"
-                    icon="tabler:map-off"
-                    @click="handleBatchEraseLocation"
-                  >
-                    <span class="hidden sm:inline">{{
-                      $t('dashboard.photos.selection.batchEraseLocation')
-                    }}</span>
-                  </UButton>
+                  <div class="flex items-center gap-1 sm:gap-1.5 pr-2">
+                    <UButton
+                      color="neutral"
+                      variant="ghost"
+                      size="sm"
+                      class="rounded-full text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:text-white dark:hover:bg-neutral-800"
+                      icon="tabler:refresh"
+                      @click="handleBatchReprocess"
+                    >
+                      <span class="hidden sm:inline">{{
+                        $t('dashboard.photos.selection.batchReprocess')
+                      }}</span>
+                    </UButton>
 
-                  <UButton
-                    color="neutral"
-                    variant="ghost"
-                    size="sm"
-                    class="rounded-full text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:text-white dark:hover:bg-neutral-800"
-                    icon="tabler:download"
-                    @click="handleBatchDownload"
-                  >
-                    <span class="hidden sm:inline">{{
-                      $t('dashboard.photos.selection.batchDownload')
-                    }}</span>
-                  </UButton>
+                    <UButton
+                      color="neutral"
+                      variant="ghost"
+                      size="sm"
+                      class="rounded-full text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:text-white dark:hover:bg-neutral-800"
+                      icon="tabler:map-off"
+                      @click="handleBatchEraseLocation"
+                    >
+                      <span class="hidden sm:inline">{{
+                        $t('dashboard.photos.selection.batchEraseLocation')
+                      }}</span>
+                    </UButton>
 
-                  <UButton
-                    color="error"
-                    variant="ghost"
-                    size="sm"
-                    class="rounded-full hover:bg-error-50 dark:hover:bg-error-500/20"
-                    icon="tabler:trash"
-                    @click="handleBatchDelete"
-                  >
-                    <span class="hidden sm:inline">{{
-                      $t('dashboard.photos.selection.batchDelete')
-                    }}</span>
-                  </UButton>
+                    <UButton
+                      color="neutral"
+                      variant="ghost"
+                      size="sm"
+                      class="rounded-full text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:text-white dark:hover:bg-neutral-800"
+                      icon="tabler:download"
+                      @click="handleBatchDownload"
+                    >
+                      <span class="hidden sm:inline">{{
+                        $t('dashboard.photos.selection.batchDownload')
+                      }}</span>
+                    </UButton>
+
+                    <UButton
+                      color="error"
+                      variant="ghost"
+                      size="sm"
+                      class="rounded-full hover:bg-error-50 dark:hover:bg-error-500/20"
+                      icon="tabler:trash"
+                      @click="handleBatchDelete"
+                    >
+                      <span class="hidden sm:inline">{{
+                        $t('dashboard.photos.selection.batchDelete')
+                      }}</span>
+                    </UButton>
+                  </div>
                 </div>
               </div>
             </transition>

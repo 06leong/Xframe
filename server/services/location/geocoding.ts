@@ -51,7 +51,7 @@ export class MapboxGeocodingProvider implements GeocodingProvider {
   async reverseGeocode(lat: number, lon: number): Promise<LocationInfo | null> {
     try {
       return await withRetry(
-        async () => {
+        async (signal) => {
           // 应用速率限制
           await this.applyRateLimit()
 
@@ -76,7 +76,7 @@ export class MapboxGeocodingProvider implements GeocodingProvider {
 
           logger.location.info(`Mapbox API URL: ${url.toString()}`)
 
-          const response = await fetch(url.toString())
+          const response = await fetch(url.toString(), { signal })
 
           if (!response.ok) {
             throw new Error(
@@ -167,7 +167,7 @@ export class NominatimGeocodingProvider implements GeocodingProvider {
   async reverseGeocode(lat: number, lon: number): Promise<LocationInfo | null> {
     try {
       return await withRetry(
-        async () => {
+        async (signal) => {
           // 应用速率限制
           await this.applyRateLimit()
 
@@ -184,6 +184,7 @@ export class NominatimGeocodingProvider implements GeocodingProvider {
           }
 
           const response = await fetch(url.toString(), {
+            signal,
             headers: {
               'User-Agent': this.userAgent,
             },

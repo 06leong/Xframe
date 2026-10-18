@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { motion } from 'motion-v'
+import { useWizardStore } from '~/stores/wizard'
 
 const route = useRoute()
+const wizardStore = useWizardStore()
 
 const steps = computed(() => [
   { label: $t('onboarding.layout.steps.welcome'), route: 'onboarding' },
@@ -18,6 +20,10 @@ const steps = computed(() => [
 const currentStepIndex = computed(() => {
   return steps.value.findIndex((s) => s.route === route.name)
 })
+
+function isStepAccessible(index: number) {
+  return wizardStore.completedSteps.includes(index)
+}
 </script>
 
 <template>
@@ -140,10 +146,20 @@ const currentStepIndex = computed(() => {
               </div>
             </div>
 
-            <div
+            <NuxtLink
               v-for="(step, index) in steps"
               :key="step.route"
+              :to="
+                isStepAccessible(index)
+                  ? step.route === 'onboarding'
+                    ? '/onboarding'
+                    : `/onboarding/${step.route.replace('onboarding-', '')}`
+                  : undefined
+              "
               class="relative flex items-center gap-4 py-3 pl-2 group"
+              :class="
+                isStepAccessible(index) ? 'cursor-pointer' : 'cursor-default'
+              "
             >
               <!-- Active Indicator Background -->
               <motion.div
@@ -177,9 +193,7 @@ const currentStepIndex = computed(() => {
                 <span
                   class="text-sm font-medium transition-colors duration-300"
                   :class="[
-                    index <= currentStepIndex
-                      ? 'text-white'
-                      : 'text-neutral-500 group-hover:text-neutral-400',
+                    isStepAccessible(index) ? 'text-white' : 'text-neutral-500',
                   ]"
                 >
                   {{ step.label }}
@@ -191,7 +205,7 @@ const currentStepIndex = computed(() => {
                   {{ $t('onboarding.layout.current') }}
                 </span>
               </div>
-            </div>
+            </NuxtLink>
           </div>
         </div>
 

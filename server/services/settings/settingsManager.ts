@@ -7,6 +7,7 @@ import type {
 } from '~~/shared/types/settings'
 import { validateAboutSettingValue } from '~~/shared/utils/about-settings'
 import type { SettingKey, SettingNamespace } from './contants'
+import { validateQueueWorkerCount } from '~~/shared/utils/queue-config'
 
 export class SettingsManager {
   private static instance: SettingsManager
@@ -218,6 +219,36 @@ export class SettingsManager {
     return value as T
   }
 
+  /**
+   * Check whether a setting still holds its default value, i.e. it has never
+   * been customized by the user (via the dashboard, the wizard, or a previous
+   * runtime-config migration with a non-default value).
+   * @returns true if the stored value equals the stored default value.
+   *          Also true if the setting does not exist.
+   */
+  isDefault(
+    namespace: SettingNamespace,
+    key: SettingKey<typeof namespace>,
+  ): boolean {
+    const db = useDB()
+    const setting = db
+      .select({
+        value: tables.settings.value,
+        defaultValue: tables.settings.defaultValue,
+      })
+      .from(tables.settings)
+      .where(
+        and(
+          eq(tables.settings.namespace, namespace),
+          eq(tables.settings.key, key),
+        ),
+      )
+      .get()
+
+    if (!setting) return true
+    return setting.value === setting.defaultValue
+  }
+
   async set(
     namespace: SettingNamespace,
     key: SettingKey<typeof namespace>,
@@ -263,6 +294,9 @@ export class SettingsManager {
     }
 
     const serializedValue = this.serialize(value)
+    if (namespace === 'system' && key === 'queue.workerCount') {
+      validateQueueWorkerCount(value)
+    }
 
     db.update(tables.settings)
       .set({
@@ -280,6 +314,20 @@ export class SettingsManager {
 
     this._logger.info(`Setting ${namespace}:${key} updated`)
     this.settingsCache.set(cacheKey, value)
+    if (
+      namespace === 'system' &&
+      key === 'queue.workerCount' &&
+      !this.isInitializing
+    ) {
+      void globalThis.__workerPool
+        ?.setWorkerCount(value as number)
+        .catch((error) => {
+          this._logger.error(
+            'Failed to apply queue concurrency setting:',
+            error,
+          )
+        })
+    }
 
     // Trigger storage provider switch if storage:provider is being changed
     // Skip during initialization as storage manager is not yet initialized
@@ -312,8 +360,7 @@ export class SettingsManager {
 
       const newProvider = await this.storage.getProviderById(providerId)
       if (!newProvider) {
-        this._logger.error(`Provider with ID ${providerId} not found`)
-        return
+        throw new Error(`Provider with ID ${providerId} not found`)
       }
 
       let storageManager = getGlobalStorageManager()
@@ -326,13 +373,12 @@ export class SettingsManager {
             newProvider.config,
             loggerModule.logger.dynamic('storage'),
           )
-          setGlobalStorageManager(storageManager)
-
           if (newProvider.config.provider === 'local') {
             const fs = await import('node:fs/promises')
             await fs.mkdir(newProvider.config.basePath, { recursive: true })
           }
 
+          setGlobalStorageManager(storageManager)
           this._logger.info('Storage manager bootstrap completed')
           return
         } catch (bootstrapError) {
@@ -340,7 +386,7 @@ export class SettingsManager {
             'Failed to bootstrap storage manager with new provider:',
             bootstrapError,
           )
-          return
+          throw bootstrapError
         }
       }
 
@@ -354,6 +400,7 @@ export class SettingsManager {
       )
     } catch (error) {
       this._logger.error('Failed to switch storage provider:', error)
+      throw error
     }
   }
 
@@ -458,15 +505,53 @@ export class SettingsManager {
 
     async updateProvider(
       id: number,
-      providerConfig: Partial<NewSettingStorageProvider['config']>,
+      providerConfig: Partial<NewSettingStorageProvider>,
     ): Promise<void> {
       const db = useDB()
+      const reloadActiveProvider =
+        !settingsManager.isInitializing_() &&
+        (await settingsManager.get<number>('storage', 'provider')) === id
+      const previousProvider = reloadActiveProvider
+        ? await this.getProviderById(id)
+        : null
+
+      if (reloadActiveProvider && !previousProvider) {
+        throw new Error(`Provider with ID ${id} not found`)
+      }
+
       db.update(tables.settings_storage_providers)
         .set({
           ...providerConfig,
         })
         .where(eq(tables.settings_storage_providers.id, id))
         .run()
+
+      // Rebuild the active instance before saving completes so subsequent
+      // requests use the updated configuration, including client credentials.
+      if (previousProvider) {
+        try {
+          await settingsManager.triggerStorageProviderSwitch(id)
+        } catch (error) {
+          // Provider construction leaves the existing instance untouched on
+          // failure; restore its persisted configuration to match.
+          try {
+            db.update(tables.settings_storage_providers)
+              .set({
+                name: previousProvider.name,
+                provider: previousProvider.provider,
+                config: previousProvider.config,
+              })
+              .where(eq(tables.settings_storage_providers.id, id))
+              .run()
+          } catch (rollbackError) {
+            settingsManager._logger.error(
+              'Failed to roll back storage provider record:',
+              rollbackError,
+            )
+          }
+          throw error
+        }
+      }
     },
 
     async deleteProvider(id: number): Promise<void> {

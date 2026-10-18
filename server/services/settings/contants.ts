@@ -1,3 +1,4 @@
+import { tourIds } from '~~/shared/types/tours'
 import type { SettingConfig } from '~~/shared/types/settings'
 import i18nOptions from '~~/i18n/i18n.options'
 import { ABOUT_SETTING_DEFAULTS } from '~~/shared/utils/about-settings'
@@ -65,7 +66,24 @@ const PHOTO_INFO_TOGGLE_SETTINGS = PHOTO_INFO_TOGGLE_KEYS.map((key) => ({
 })) satisfies SettingConfig[]
 
 export const DEFAULT_SETTINGS = [
+  ...tourIds.map((id) => ({
+    namespace: 'system' as const,
+    key: `tour.${id}` as const,
+    type: 'string' as const,
+    defaultValue: 'pending',
+    enum: ['pending', 'completed', 'skipped'],
+    hidden: true,
+    isReadonly: true,
+  })),
   // NAMESPACE: system
+  {
+    namespace: 'system',
+    key: 'queue.workerCount',
+    type: 'number',
+    defaultValue: 5,
+    label: 'settings.system.queue.workerCount.label',
+    description: 'settings.system.queue.workerCount.description',
+  },
   {
     namespace: 'system',
     key: 'firstLaunch',
@@ -148,6 +166,13 @@ export const DEFAULT_SETTINGS = [
     label: 'settings.app.about.attribution.label',
     description: 'settings.app.about.attribution.description',
     isPublic: true,
+  },
+  {
+    namespace: 'app',
+    key: 'avatarStorageKey',
+    type: 'string',
+    defaultValue: '',
+    hidden: true,
   },
   {
     namespace: 'app',
@@ -382,3 +407,12 @@ export type SettingKey<N extends SettingNamespace> = Extract<
   (typeof DEFAULT_SETTINGS)[number],
   { namespace: N }
 >['key']
+
+export function getHiddenSettingKeys(namespace: string): Set<string> {
+  const settings = DEFAULT_SETTINGS as readonly SettingConfig[]
+  return new Set(
+    settings
+      .filter((setting) => setting.namespace === namespace && setting.hidden)
+      .map((setting) => setting.key),
+  )
+}

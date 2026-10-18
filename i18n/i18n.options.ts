@@ -6,7 +6,7 @@ import type { I18nOptions } from 'vue-i18n'
 export const defaultLocale = 'en'
 
 type DayjsLocale = NonNullable<DayjsModuleOptions['locales']>[number]
-type AppLocaleCode = 'zh-Hans' | 'zh-Hant' | 'en'
+export type AppLocaleCode = 'zh-Hans' | 'zh-Hant' | 'en'
 
 type AppLocaleObject = LocaleObject<AppLocaleCode> & {
   label: string
@@ -36,6 +36,10 @@ export const locales: AppLocaleObject[] = [
     language: 'en',
   },
 ]
+
+export function isAppLocaleCode(value: unknown): value is AppLocaleCode {
+  return locales.some(({ code }) => code === value)
+}
 
 export const localeLanguages = locales.map(({ language }) => language)
 export const dayjsLocales: DayjsLocale[] = ['zh-cn', 'zh-tw', 'en']

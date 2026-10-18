@@ -512,6 +512,10 @@ watch(
 
 defineShortcuts({
   escape: () => {
+    if (showShareModal.value) {
+      showShareModal.value = false
+      return
+    }
     emit('close')
   },
 })
