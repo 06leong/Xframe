@@ -10,6 +10,14 @@ This document tracks the changes maintained on the `personal` branch of this Chr
 
 ## Version History
 
+### personal-1.0.2.1
+
+- Merged upstream ChronoFrame v1.0.2. All seven setup wizard endpoints now require an explicit first-launch state, share a serialized guard, and enforce a shared request limit. Queued requests cannot change settings or administrator credentials after setup completes.
+- Fixed long album descriptions stretching the dashboard table; descriptions truncate within a bounded width and remain available on hover.
+- Updated upstream dependencies, release version, and the Chinese README banner while retaining the personal English README and Markdown dependencies.
+- Preserved all personal customizations, including public slugs and legacy links, album-scoped links, public-only social previews, About, three UI languages, MapTiler, EXIF time zones, and photo information controls. No database schema or migration changes were required.
+- Application version: 1.0.2. Personal image version: personal-1.0.2.1.
+
 ### personal-1.0.1.1
 
 - Merged upstream ChronoFrame v1.0.1, including the 1.0.0 stable features and 1.0.1 analytics, queue deletion, and dark-mode log fixes.
