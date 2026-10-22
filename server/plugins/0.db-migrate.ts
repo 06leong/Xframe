@@ -2,24 +2,29 @@ import { mkdirSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 
 import Database from 'better-sqlite3'
-import { drizzle } from 'drizzle-orm/better-sqlite3'
-import { migrate } from 'drizzle-orm/better-sqlite3/migrator'
+import {
+  getDatabasePath,
+  migratePersonalDatabase,
+} from '../services/database-migrations'
 
 let migrationPromise: Promise<void> | null = null
 const migrationLogger = logger.dynamic('db-migrate')
 
 async function runMigrations() {
-  const dbPath = resolve(process.env.DATABASE_URL || './data/app.sqlite3')
+  const dbPath = getDatabasePath()
 
   mkdirSync(dirname(dbPath), { recursive: true })
 
   const sqlite = new Database(dbPath)
 
   try {
-    const db = drizzle(sqlite)
-    await migrate(db, {
-      migrationsFolder: resolve('./server/database/migrations'),
-    })
+    const reconciled = migratePersonalDatabase(
+      sqlite,
+      resolve('./server/database/migrations'),
+    )
+    if (reconciled) {
+      migrationLogger.info('Reconciled existing personal public slug migration')
+    }
     migrationLogger.info('Database migration finished successfully')
   } finally {
     sqlite.close()

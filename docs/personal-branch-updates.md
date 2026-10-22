@@ -10,6 +10,14 @@ This document tracks the changes maintained on the `personal` branch of this Chr
 
 ## Version History
 
+### personal-1.0.2.2
+
+- Fixed upgrades from older personal installations where the runtime schema guard had already added public_slug while migration history still ended at 0010. Startup now verifies the column and unique index, records the original 0011 migration hash and timestamp, and runs the remaining published migrations without rewriting photos or public slugs.
+- Restores the album fields, photo access-key index, and queue availability field required by public galleries and media authorization. Existing published migration SQL remains unchanged.
+- Unified database path resolution for startup migrations and application queries, including file:-prefixed SQLite paths.
+- Added regression coverage for the production legacy schema state, repeated upgrades, index validation, and preservation of existing data and migration history.
+- Application version: 1.0.2. Personal image version: personal-1.0.2.2.
+
 ### personal-1.0.2.1
 
 - Merged upstream ChronoFrame v1.0.2. All seven setup wizard endpoints now require an explicit first-launch state, share a serialized guard, and enforce a shared request limit. Queued requests cannot change settings or administrator credentials after setup completes.

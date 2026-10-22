@@ -1,7 +1,8 @@
 import { drizzle } from 'drizzle-orm/better-sqlite3'
 import Database from 'better-sqlite3'
 import { mkdirSync } from 'node:fs'
-import { dirname, resolve } from 'node:path'
+import { dirname } from 'node:path'
+import { getDatabasePath } from '../services/database-migrations'
 
 import * as schema from '../database/schema'
 
@@ -11,11 +12,6 @@ export { eq, and, or, inArray } from 'drizzle-orm'
 // 创建单例数据库连接
 let dbInstance: ReturnType<typeof drizzle> | null = null
 let sqliteInstance: Database.Database | null = null
-
-const getDatabasePath = () => {
-  const configuredPath = process.env.DATABASE_URL || './data/app.sqlite3'
-  return resolve(configuredPath.replace(/^file:/, ''))
-}
 
 const ensurePersonalPhotoSlugSchema = (sqlite: Database.Database) => {
   const photoColumns = sqlite
